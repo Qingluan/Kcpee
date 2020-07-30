@@ -205,7 +205,7 @@ func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 
 				default:
 					config := b.GetConfig()
-					if config.Method == "tls" {
+					if config.Method != "tls" {
 						session := serve.WithSession(config, rr)
 						fmt.Println("route ->", utils.FGCOLORS[2](config.Server.(string)))
 						serve.handleSession(session, stream, true, raw)
