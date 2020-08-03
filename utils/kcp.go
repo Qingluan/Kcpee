@@ -110,12 +110,15 @@ func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err e
 
 		return
 	} else {
+		if kcpBase.smuxConfig == nil {
+			kcpBase.smuxConfig = kcpBase.kconfig.GenerateConfig()
+		}
 		if session, err = smux.Client(kcpBase.kcpconnection, kcpBase.smuxConfig); err == nil {
 			return session, nil
 		} else {
 			block := config.GeneratePassword()
 			serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
-			var kcpconn *kcp.UDPSession
+			kcpconn := kcpBase.kcpconnection
 			if kcpconn, err = kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
 				kcpBase.UpdateKcpConfig(kcpconn)
 				// if kcpBase.smuxConfig == nil {
