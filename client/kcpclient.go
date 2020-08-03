@@ -165,17 +165,17 @@ func (kclient *KcpClient) handleSocks5TcpAndUDP(p1 net.Conn) {
 		return
 	}
 
-	raw, host, isUdp, err := utils.GetLocalRequest(&p1)
+	raw, host, _, err := utils.GetLocalRequest(&p1)
 	if err != nil {
 		fmt.Println(err)
 	}
-	if isUdp {
+	// if isUdp {
 
-		utils.ColorL("socks5 UDP-->", host)
-	} else {
+	// 	utils.ColorL("socks5 UDP-->", host)
+	// } else {
 
-		utils.ColorL("socks5 -->", host)
-	}
+	// 	utils.ColorL("socks5 -->", host)
+	// }
 	if err != nil {
 		// utils.ColorL("Err socks5:", err)
 	}
@@ -284,7 +284,7 @@ func (kclient *KcpClient) handleBody(p1 net.Conn, host string, raw []byte) {
 	config := kclient.GetConfig()
 
 	if kclient.routeMode == AUTO_MODE {
-		utils.ColorL(config.Method, "mode:", "Auto")
+		utils.ColorL(config.Method, "mode:", "Auto", host)
 		if kclient.useAutoMap && kclient.listenAddr != utils.TestProxyAddr {
 			// utils.ColorL("try use", host, fmt.Sprintf("(%s)", utils.GetMainDomain(host)))
 			if v, ok := utils.AutoMap[utils.GetMainDomain(host)]; ok {
@@ -299,15 +299,15 @@ func (kclient *KcpClient) handleBody(p1 net.Conn, host string, raw []byte) {
 		}
 	} else if kclient.routeMode == FLOW_MODE {
 
-		utils.ColorL(config.Method, "mode:", "Flow")
+		utils.ColorL(config.Method, "mode:", "Flow", host)
 		config = utils.BOOK.FlowGet()
 	} else if kclient.routeMode == SINGLE_MODE {
 
-		utils.ColorL(config.Method, "mode:", "Single")
+		utils.ColorL(config.Method, "mode:", "Single", host)
 		config = kclient.GetConfig()
 	} else {
 
-		utils.ColorL(config.Method, "mode:", "Default")
+		utils.ColorL(config.Method, "mode:", "Default", host)
 		config = kclient.GetConfig()
 	}
 	if config == nil {

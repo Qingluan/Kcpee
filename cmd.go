@@ -69,6 +69,7 @@ var (
 	SaveToFile       string
 	isGBK            bool
 	ifStartUDPClient bool
+	toUri            bool
 
 	// Config area
 	refreshRate int
@@ -128,7 +129,7 @@ func DoMain() {
 	flag.StringVar(&thisnodeproxyto, "red", "", "node redirect to another node like -red ss://xxxx= ")
 	flag.StringVar(&doSomeString, "Do", "", "cmd string run hear include test, gernerate and do some")
 	flag.StringVar(&SaveToFile, "output", "", "output string dst or some output ")
-
+	flag.BoolVar(&toUri, "uri", false, "true to show uri")
 	flag.IntVar(&refreshRate, "config.rate", 3, "set recv msg refresh rate, default: 3s")
 	flag.Parse()
 
@@ -385,6 +386,12 @@ func DoMain() {
 		if ff, err := utils.Sync(configFile); err == nil {
 			utils.ColorL("genreate file:", ff)
 		}
+		os.Exit(0)
+	}
+
+	if toUri {
+		resString := cmdConfig.ToUri()
+		fmt.Println(resString)
 		os.Exit(0)
 	}
 
