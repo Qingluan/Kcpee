@@ -106,7 +106,7 @@ func (serve *KcpServer) Listen() {
 		g.Printf("accept ready \r")
 		for {
 			conn, err := listener.AcceptKCP()
-			g.Println("new con:", conn.RemoteAddr())
+			// g.Println("new con:", conn.RemoteAddr())
 			serve.UpdateKcpConfig(conn)
 			if err != nil {
 				if !strings.Contains(err.Error(), "too many open files") {
@@ -114,7 +114,7 @@ func (serve *KcpServer) Listen() {
 				}
 				continue
 			}
-			go serve.ListenMux(conn)
+			serve.ListenMux(conn)
 		}
 	} else {
 		log.Fatal(err)

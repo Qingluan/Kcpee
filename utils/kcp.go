@@ -21,6 +21,7 @@ type KcpBase struct {
 	aliveConn        int
 	activateConn     int
 	aliveReverseConn int
+	kcpconnection    *kcp.UDPSession
 	aliveRefreshRate time.Duration
 	chScavenger      chan *smux.Session
 	IsHeartBeat      bool
@@ -106,25 +107,31 @@ func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err e
 		} else {
 			log.Fatal("tls conn -> smux session error:", err)
 		}
+
 		return
-	}
-	block := config.GeneratePassword()
-	serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
-	var kcpconn *kcp.UDPSession
-	if kcpconn, err = kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
-		kcpBase.UpdateKcpConfig(kcpconn)
-		if kcpBase.smuxConfig == nil {
-			kcpBase.smuxConfig = kcpBase.kconfig.GenerateConfig()
-		}
-		if session, err = smux.Client(kcpconn, kcpBase.smuxConfig); err == nil {
+	} else {
+		if session, err = smux.Client(kcpBase.kcpconnection, kcpBase.smuxConfig); err == nil {
 			return session, nil
+		} else {
+			block := config.GeneratePassword()
+			serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
+			var kcpconn *kcp.UDPSession
+			if kcpconn, err = kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
+				kcpBase.UpdateKcpConfig(kcpconn)
+				// if kcpBase.smuxConfig == nil {
+				kcpBase.smuxConfig = kcpBase.kconfig.GenerateConfig()
+				kcpBase.kcpconnection = kcpconn
+				if session, err = smux.Client(kcpBase.kcpconnection, kcpBase.smuxConfig); err == nil {
+					return session, nil
+				}
+			}
 		}
 
+		if err != nil {
+			return nil, err
+		}
+		return session, nil
 	}
-	if err != nil {
-		return nil, err
-	}
-	return session, nil
 }
 
 func (kcpBase *KcpBase) Activate(do_some func() error) error {
