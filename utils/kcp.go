@@ -200,13 +200,13 @@ func (kcpBase *KcpBase) Init(config *Config) {
 	if config == nil {
 		config = kcpBase.config
 	}
-	if config.Method != "tls" {
-		for k := range kcpBase.muxes {
-			kcpBase.muxes[k].session = kcpBase.WaitConn(config)
-			kcpBase.muxes[k].ttl = time.Now().Add(time.Duration(kcpBase.kconfig.AutoExpire) * time.Second)
+	// if config.Method != "tls" {
+	// 	for k := range kcpBase.muxes {
+	// 		kcpBase.muxes[k].session = kcpBase.WaitConn(config)
+	// 		kcpBase.muxes[k].ttl = time.Now().Add(time.Duration(kcpBase.kconfig.AutoExpire) * time.Second)
 
-		}
-	}
+	// 	}
+	// }
 
 	if kcpBase.chScavenger == nil {
 		kcpBase.chScavenger = make(chan *smux.Session, 256)
