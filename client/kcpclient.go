@@ -282,8 +282,9 @@ func (kclient *KcpClient) handleBody(p1 net.Conn, host string, raw []byte) {
 	}
 	// do auto expiration && rekclientection
 	config := kclient.GetConfig()
-	utils.ColorL(config.Method, "mode:", kclient.routeMode)
+
 	if kclient.routeMode == AUTO_MODE {
+		utils.ColorL(config.Method, "mode:", "Auto")
 		if kclient.useAutoMap && kclient.listenAddr != utils.TestProxyAddr {
 			// utils.ColorL("try use", host, fmt.Sprintf("(%s)", utils.GetMainDomain(host)))
 			if v, ok := utils.AutoMap[utils.GetMainDomain(host)]; ok {
@@ -297,10 +298,16 @@ func (kclient *KcpClient) handleBody(p1 net.Conn, host string, raw []byte) {
 			}
 		}
 	} else if kclient.routeMode == FLOW_MODE {
+
+		utils.ColorL(config.Method, "mode:", "Flow")
 		config = utils.BOOK.FlowGet()
 	} else if kclient.routeMode == SINGLE_MODE {
+
+		utils.ColorL(config.Method, "mode:", "Single")
 		config = kclient.GetConfig()
 	} else {
+
+		utils.ColorL(config.Method, "mode:", "Default")
 		config = kclient.GetConfig()
 	}
 	if config == nil {
@@ -308,8 +315,11 @@ func (kclient *KcpClient) handleBody(p1 net.Conn, host string, raw []byte) {
 		// config = kclient.GetConfig()
 	}
 	if config.Method != "tls" {
+
+		utils.ColorL("Stream", "....")
 		session := kclient.WithSession(config, rr)
-		utils.ColorL("Raw:", raw)
+		// utils.ColorL("Raw:", raw)
+
 		kclient.handleClient(session, p1, false, raw)
 	} else {
 		tconfig, err := config.ToTlsConfig()
@@ -486,8 +496,10 @@ func (conn *KcpClient) handleClient(session *smux.Session, p1 net.Conn, quiet bo
 	defer p1.Close()
 	p2, err := session.OpenStream()
 	if err != nil {
+		utils.ColorL("StreamErr", err)
 		return
 	}
+	utils.ColorL("Stream", "ready")
 	defer p2.Close()
 	if _, err := p2.Write(hostData); err != nil {
 		log.Fatal("no host/addr")
