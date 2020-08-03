@@ -176,7 +176,6 @@ func (kclient *KcpClient) handleSocks5TcpAndUDP(p1 net.Conn) {
 
 		utils.ColorL("socks5 -->", host)
 	}
-	_, err = p1.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x08, 0x43})
 	if err != nil {
 		// utils.ColorL("Err socks5:", err)
 	}
