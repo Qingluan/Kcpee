@@ -543,6 +543,9 @@ func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 	}
 
 	_, err = conn.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x08, 0x43})
+	if err != nil {
+		utils.ColorL("Err", err)
+	}
 	// log.Println("connect to ->", host)
 
 	defer func() {
