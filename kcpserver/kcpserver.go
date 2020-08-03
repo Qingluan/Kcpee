@@ -107,7 +107,7 @@ func (serve *KcpServer) Listen() {
 		ccCount := 0
 		for {
 			conn, err := listener.AcceptKCP()
-			g.Printf("Alive: %d  Time:%s           %d\r", serve.GetAliveNum(), time.Now().String()[:20], ccCount)
+			g.Printf("\rAlive: %d/%d  Time:%s    %d\r", serve.GetAliveNum(), ccCount, time.Now().String()[:20])
 			// g.Println("new con:", conn.RemoteAddr())
 			serve.UpdateKcpConfig(conn)
 			if err != nil {
