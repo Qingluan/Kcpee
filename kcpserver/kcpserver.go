@@ -104,9 +104,10 @@ func (serve *KcpServer) Listen() {
 
 		g := color.New(color.FgGreen)
 		g.Printf("accept ready \r")
+		ccCount := 0
 		for {
 			conn, err := listener.AcceptKCP()
-			g.Printf("Alive: %d  Time:%s\r", serve.GetAliveNum(), time.Now().String()[:20])
+			g.Printf("Alive: %d  Time:%s           %d\r", serve.GetAliveNum(), time.Now().String()[:20], ccCount)
 			// g.Println("new con:", conn.RemoteAddr())
 			serve.UpdateKcpConfig(conn)
 			if err != nil {
@@ -115,6 +116,7 @@ func (serve *KcpServer) Listen() {
 				}
 				continue
 			}
+			ccCount++
 			go serve.ListenMux(conn)
 		}
 	} else {
@@ -142,7 +144,7 @@ func (serve *KcpServer) ListenMux(conn io.ReadWriteCloser) {
 		rr %= uint16(serve.Numconn)
 
 	}
-	utils.ColorL("exit mux")
+	// utils.ColorL("exit mux")
 }
 
 func (serve *KcpServer) needMoreTunnel(stream *smux.Stream) {
@@ -180,7 +182,7 @@ func (serve *KcpServer) ListenInTls(config *utils.Config) {
 
 func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 	g := color.New(color.FgGreen)
-	utils.ColorL("incomming :", stream.RemoteAddr())
+	// utils.ColorL("incomming :", stream.RemoteAddr())
 	host, raw, isUdp, err := utils.GetServerRequest(stream)
 	fromHost := strings.Split(stream.RemoteAddr().String(), ":")[0]
 	if err != nil {
@@ -188,9 +190,9 @@ func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 		stream.Close()
 		return err
 	}
-	if host != "TUNNEL_CONNECT" {
-		g.Println("Accept stream req: | ", host, "| isUdp: ", isUdp)
-	}
+	// if host != "TUNNEL_CONNECT" {
+	// 	g.Println("Accept stream req: | ", host, "| isUdp: ", isUdp)
+	// }
 
 	if strings.HasPrefix(host, "redirect://") {
 		serve.handleBook(fromHost, host, stream)
@@ -538,11 +540,11 @@ func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 		if ne, ok := err.(*net.OpError); ok && (ne.Err == syscall.EMFILE || ne.Err == syscall.ENFILE) {
 			// log too many open file error
 			// EMFILE is process reaches open file limits, ENFILE is system limit
-			log.Println("dial error:", err)
+			log.Println("dial error too many file!!:", err)
 		} else {
-			log.Println("error connecting to:", host, err)
+			log.Println("handleRemote", host, "Err", err)
 		}
-		log.Println("X connect to ->", host)
+		// log.Println("X connect to ->", host)
 		return
 	}
 
@@ -550,7 +552,7 @@ func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 	if err != nil {
 		utils.ColorL("Err", err)
 	}
-	utils.ColorL("handleRemote", host+" ok")
+	utils.ColorL("handleRemote", host, "ok")
 	// log.Println("connect to ->", host)
 
 	defer func() {
