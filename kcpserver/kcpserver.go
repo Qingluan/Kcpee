@@ -114,7 +114,7 @@ func (serve *KcpServer) Listen() {
 				}
 				continue
 			}
-			serve.ListenMux(conn)
+			go serve.ListenMux(conn)
 		}
 	} else {
 		log.Fatal(err)

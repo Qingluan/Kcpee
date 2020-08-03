@@ -112,7 +112,19 @@ func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err e
 	} else {
 		if kcpBase.smuxConfig == nil {
 			kcpBase.smuxConfig = kcpBase.kconfig.GenerateConfig()
+
 		}
+
+		block := config.GeneratePassword()
+		serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
+		if connection, err := kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
+			kcpBase.UpdateKcpConfig(connection)
+			if session, err = smux.Client(connection, kcpBase.smuxConfig); err == nil {
+				return session, nil
+			}
+		}
+		return
+
 		if kcpBase.kcpconnection == nil {
 			// ColorL("<< --- |init| ")
 
