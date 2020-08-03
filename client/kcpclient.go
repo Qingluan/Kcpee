@@ -89,7 +89,7 @@ func (conn *KcpClient) Listen(listenAddr string, ifStartUdpListener ...bool) (er
 			continue
 		}
 		p1, err := ln.Accept()
-		utils.ColorL("socks5 <-- ", p1.RemoteAddr())
+		// utils.ColorL("socks5 <-- ", p1.RemoteAddr())
 		acceptnum++
 		if acceptnum%20 == 0 {
 			// utils.ColorL("accept tcp:", acceptnum)
@@ -316,7 +316,7 @@ func (kclient *KcpClient) handleBody(p1 net.Conn, host string, raw []byte) {
 	}
 	if config.Method != "tls" {
 
-		utils.ColorL("Stream", "....")
+		// utils.ColorL("Stream", "....")
 		session := kclient.WithSession(config, rr)
 		// utils.ColorL("Raw:", raw)
 
@@ -501,9 +501,9 @@ func (conn *KcpClient) handleClient(session *smux.Session, p1 net.Conn, quiet bo
 			utils.ColorL("StreamErrAgain", err)
 			return
 		}
-		// return
+		return
 	}
-	utils.ColorL("Stream", "ready")
+	// utils.ColorL("Stream", "ready")
 	defer p2.Close()
 	if _, err := p2.Write(hostData); err != nil {
 		log.Fatal("no host/addr")
@@ -516,7 +516,7 @@ func (conn *KcpClient) handleClient(session *smux.Session, p1 net.Conn, quiet bo
 		p1.Close()
 		return
 	} else {
-		utils.ColorL("Stream", socksReplyBuf[:n])
+		// utils.ColorL("Stream", socksReplyBuf[:n])
 	}
 	p1.Write(socksReplyBuf[:n])
 	conn.Pipe(p1, p2)
