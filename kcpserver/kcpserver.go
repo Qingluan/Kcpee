@@ -140,6 +140,7 @@ func (serve *KcpServer) ListenMux(conn io.ReadWriteCloser) {
 		rr %= uint16(serve.Numconn)
 
 	}
+	utils.ColorL("exit mux")
 }
 
 func (serve *KcpServer) needMoreTunnel(stream *smux.Stream) {
