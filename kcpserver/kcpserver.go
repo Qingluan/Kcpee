@@ -106,7 +106,7 @@ func (serve *KcpServer) Listen() {
 		g.Printf("accept ready \r")
 		for {
 			conn, err := listener.AcceptKCP()
-			g.Printf("Alive: %d  Time:%s", serve.GetAliveNum(), time.Now())
+			g.Printf("Alive: %d  Time:%s\r", serve.GetAliveNum(), time.Now().String()[:20])
 			// g.Println("new con:", conn.RemoteAddr())
 			serve.UpdateKcpConfig(conn)
 			if err != nil {
