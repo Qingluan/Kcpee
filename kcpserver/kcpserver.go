@@ -107,7 +107,7 @@ func (serve *KcpServer) Listen() {
 		ccCount := 0
 		for {
 			conn, err := listener.AcceptKCP()
-			g.Printf("\rAlive: %d/%d  Time:%s    %d\r", serve.GetAliveNum(), ccCount, time.Now().String()[:20])
+			g.Printf("\rAlive: %d/%d  Time:%s \r", serve.GetAliveNum(), ccCount, time.Now().String()[:20])
 			// g.Println("new con:", conn.RemoteAddr())
 			serve.UpdateKcpConfig(conn)
 			if err != nil {
@@ -535,6 +535,7 @@ func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 		closed = true
 		return
 	}
+	num := serve.GetAliveNum()
 	remote, err := net.Dial("tcp", host)
 	if err != nil {
 		if ne, ok := err.(*net.OpError); ok && (ne.Err == syscall.EMFILE || ne.Err == syscall.ENFILE) {
@@ -552,7 +553,7 @@ func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 	if err != nil {
 		utils.ColorL("Err", err)
 	}
-	utils.ColorL("handleRemote", host, "ok")
+	utils.ColorL(num, "handleRemote", host, "ok")
 	// log.Println("connect to ->", host)
 
 	defer func() {
