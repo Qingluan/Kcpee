@@ -475,6 +475,10 @@ func (kcpBase *KcpBase) Pipe(p1, p2 net.Conn) {
 	kcpBase.aliveConn--
 }
 
+func (kcpBase *KcpBase) AddAlive() {
+	kcpBase.aliveConn++
+}
+
 type scavengeSession struct {
 	session *smux.Session
 	ts      time.Time

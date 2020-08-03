@@ -133,6 +133,7 @@ func (serve *KcpServer) ListenMux(conn io.ReadWriteCloser) {
 	var rr uint16
 	for {
 		if stream, err := mux.AcceptStream(); err == nil {
+			serve.AddAlive()
 			go serve.handleStream(rr, stream)
 		} else {
 			break
