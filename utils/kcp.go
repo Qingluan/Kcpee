@@ -114,6 +114,7 @@ func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err e
 			kcpBase.smuxConfig = kcpBase.kconfig.GenerateConfig()
 		}
 		if kcpBase.kcpconnection == nil {
+			ColorL("<< --- |init| ")
 
 			block := config.GeneratePassword()
 			serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
@@ -124,13 +125,18 @@ func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err e
 				}
 			}
 		} else {
+			// g :=
 			if session, err = smux.Client(kcpBase.kcpconnection, kcpBase.smuxConfig); err == nil {
+				ColorL("<< --- kcp ---- >>")
 				return session, nil
 			} else {
+				ColorL("<< --- kcp ---- |x|")
 				block := config.GeneratePassword()
 				serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
 				kcpconn := kcpBase.kcpconnection
 				if kcpconn, err = kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
+
+					ColorL("|client| --- >>")
 					kcpBase.UpdateKcpConfig(kcpconn)
 					kcpBase.kcpconnection = kcpconn
 					// if kcpBase.smuxConfig == nil {
