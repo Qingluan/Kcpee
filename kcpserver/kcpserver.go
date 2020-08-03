@@ -95,6 +95,7 @@ func (serve *KcpServer) Listen() {
 	}
 
 	kconfig := serve.GetKcpConfig()
+	// kconfig := smux.DefaultConfig()
 	block := config.GeneratePassword()
 	severString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
 	if listener, err := kcp.ListenWithOptions(severString, block, kconfig.DataShard, kconfig.ParityShard); err == nil {
@@ -105,17 +106,39 @@ func (serve *KcpServer) Listen() {
 		g.Printf("accept ready \r")
 		for {
 			conn, err := listener.AcceptKCP()
+			g.Println("new con.")
 			serve.UpdateKcpConfig(conn)
 			if err != nil {
 				if !strings.Contains(err.Error(), "too many open files") {
-					log.Println(err)
+					log.Fatal(err)
 				}
 				continue
 			}
-			go serve.handleMux(conn)
+			go serve.ListenMux(conn)
 		}
 	} else {
 		log.Fatal(err)
+	}
+}
+
+func (serve *KcpServer) ListenMux(conn io.ReadWriteCloser) {
+	sconfig := serve.GetSmuxConfig()
+	mux, err := smux.Server(conn, sconfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer mux.Close()
+
+	var rr uint16
+	for {
+		if stream, err := mux.AcceptStream(); err == nil {
+			go serve.handleStream(rr, stream)
+		} else {
+			break
+		}
+		rr++
+		rr %= uint16(serve.Numconn)
+
 	}
 }
 
@@ -470,27 +493,6 @@ func (serve *KcpServer) bookHandle(host, cmd string) (repl []byte) {
 		}
 	}
 	return
-}
-
-func (serve *KcpServer) handleMux(conn io.ReadWriteCloser) {
-	sconfig := serve.GetSmuxConfig()
-	mux, err := smux.Server(conn, sconfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer mux.Close()
-
-	var rr uint16
-	for {
-		if stream, err := mux.AcceptStream(); err == nil {
-			go serve.handleStream(rr, stream)
-		} else {
-			break
-		}
-		rr++
-		rr %= uint16(serve.Numconn)
-
-	}
 }
 
 func (serve *KcpServer) handleSessionCon(p2, p1 net.Conn, quiet bool, data []byte) {
