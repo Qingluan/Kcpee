@@ -114,7 +114,7 @@ func (serve *KcpServer) Listen() {
 				}
 				continue
 			}
-			go serve.ListenMux(conn)
+			serve.ListenMux(conn)
 		}
 	} else {
 		log.Fatal(err)
@@ -177,6 +177,7 @@ func (serve *KcpServer) ListenInTls(config *utils.Config) {
 
 func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 	g := color.New(color.FgGreen)
+	utils.ColorL("incomming :", stream.RemoteAddr())
 	host, raw, isUdp, err := utils.GetServerRequest(stream)
 	fromHost := strings.Split(stream.RemoteAddr().String(), ":")[0]
 	if err != nil {
