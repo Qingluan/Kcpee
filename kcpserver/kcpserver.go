@@ -106,6 +106,7 @@ func (serve *KcpServer) Listen() {
 		g.Printf("accept ready \r")
 		for {
 			conn, err := listener.AcceptKCP()
+			g.Printf("Alive: %d  Time:%s", serve.GetAliveNum(), time.Now())
 			// g.Println("new con:", conn.RemoteAddr())
 			serve.UpdateKcpConfig(conn)
 			if err != nil {
@@ -524,6 +525,7 @@ func (serve *KcpServer) handleSession(session *smux.Session, p1 net.Conn, quiet 
 // handleEcho send back everything it received
 func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 	// utils.ColorL("func:", "handleRemote")
+
 	closed := false
 	if strings.ContainsRune(host, 0x00) {
 		log.Println("invalid domain name.")

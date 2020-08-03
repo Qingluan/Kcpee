@@ -497,7 +497,11 @@ func (conn *KcpClient) handleClient(session *smux.Session, p1 net.Conn, quiet bo
 	p2, err := session.OpenStream()
 	if err != nil {
 		utils.ColorL("StreamErr", err)
-		return
+		if session, err = conn.ReConnection(); err != nil {
+			utils.ColorL("StreamErrAgain", err)
+			return
+		}
+		// return
 	}
 	utils.ColorL("Stream", "ready")
 	defer p2.Close()
@@ -505,5 +509,13 @@ func (conn *KcpClient) handleClient(session *smux.Session, p1 net.Conn, quiet bo
 		log.Fatal("no host/addr")
 		return
 	}
+	socksReplyBuf := make([]byte, 128)
+	n, err := p2.Read(socksReplyBuf)
+	if err != nil {
+		log.Fatal("no socks5 reply host/addr, err:", err)
+	} else {
+		utils.ColorL("Stream", socksReplyBuf[:n])
+	}
+	p1.Write(socksReplyBuf[:n])
 	conn.Pipe(p1, p2)
 }

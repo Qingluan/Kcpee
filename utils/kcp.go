@@ -81,6 +81,19 @@ func (kcpBase *KcpBase) SetTunnelNum(n int) int {
 	return kcpBase.Numconn
 }
 
+func (kcpBase *KcpBase) ReConnection() (session *smux.Session, err error) {
+	config := kcpBase.config
+	block := config.GeneratePassword()
+	serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
+	if connection, err := kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
+		kcpBase.UpdateKcpConfig(connection)
+		if session, err = smux.Client(connection, kcpBase.smuxConfig); err == nil {
+			return session, nil
+		}
+	}
+	return
+}
+
 func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err error) {
 	if config.Method == "tls" {
 		tlsConfig, err2 := config.ToTlsConfig()
@@ -110,58 +123,23 @@ func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err e
 
 		return
 	} else {
+		if kcpBase.config == nil {
+			kcpBase.config = config
+		}
 		if kcpBase.smuxConfig == nil {
 			kcpBase.smuxConfig = kcpBase.kconfig.GenerateConfig()
 
 		}
 
-		// block := config.GeneratePassword()
-		// serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
-		// if connection, err := kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
-		// 	kcpBase.UpdateKcpConfig(connection)
-		// 	if session, err = smux.Client(connection, kcpBase.smuxConfig); err == nil {
-		// 		return session, nil
-		// 	}
-		// }
-		// return
-
-		if kcpBase.kcpconnection == nil {
-			ColorL("<< --- |init| ")
-
-			block := config.GeneratePassword()
-			serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
-			if kcpBase.kcpconnection, err = kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
-				kcpBase.UpdateKcpConfig(kcpBase.kcpconnection)
-				if session, err = smux.Client(kcpBase.kcpconnection, kcpBase.smuxConfig); err == nil {
-					return session, nil
-				} else {
-					log.Fatal("create session from client error:", err)
-				}
-			}
-		} else {
-			// g :=
-			if session, err = smux.Client(kcpBase.kcpconnection, kcpBase.smuxConfig); err == nil {
-				// ColorL("<< --- kcp ---- >>")
+		block := config.GeneratePassword()
+		serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
+		if connection, err := kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
+			kcpBase.UpdateKcpConfig(connection)
+			if session, err = smux.Client(connection, kcpBase.smuxConfig); err == nil {
 				return session, nil
-			} else {
-				ColorL("<< --- kcp ---- |x|")
-				block := config.GeneratePassword()
-				serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
-				kcpconn := kcpBase.kcpconnection
-				if kcpconn, err = kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
-
-					ColorL("|client| --- >>")
-					kcpBase.UpdateKcpConfig(kcpconn)
-					kcpBase.kcpconnection = kcpconn
-					// if kcpBase.smuxConfig == nil {
-					kcpBase.smuxConfig = kcpBase.kconfig.GenerateConfig()
-					kcpBase.kcpconnection = kcpconn
-					if session, err = smux.Client(kcpBase.kcpconnection, kcpBase.smuxConfig); err == nil {
-						return session, nil
-					}
-				}
 			}
 		}
+		return
 
 		if err != nil {
 			return nil, err
