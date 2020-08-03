@@ -114,7 +114,7 @@ func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err e
 			kcpBase.smuxConfig = kcpBase.kconfig.GenerateConfig()
 		}
 		if kcpBase.kcpconnection == nil {
-			ColorL("<< --- |init| ")
+			// ColorL("<< --- |init| ")
 
 			block := config.GeneratePassword()
 			serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
@@ -127,7 +127,7 @@ func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err e
 		} else {
 			// g :=
 			if session, err = smux.Client(kcpBase.kcpconnection, kcpBase.smuxConfig); err == nil {
-				ColorL("<< --- kcp ---- >>")
+				// ColorL("<< --- kcp ---- >>")
 				return session, nil
 			} else {
 				ColorL("<< --- kcp ---- |x|")
