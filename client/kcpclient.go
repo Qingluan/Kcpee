@@ -512,6 +512,10 @@ func (conn *KcpClient) handleClient(session *smux.Session, p1 net.Conn, quiet bo
 	socksReplyBuf := make([]byte, 128)
 	n, err := p2.Read(socksReplyBuf)
 	if err != nil {
+		if err.Error() == "io: read/write on closed pipe" {
+			// utils.ColorL("Close ")
+			return
+		}
 		log.Println("no socks5 reply host/addr, err:", err)
 		p1.Close()
 		return

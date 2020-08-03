@@ -435,6 +435,7 @@ func (kconfig *KcpConfig) UpdateMode() {
 
 func (kconfig *KcpConfig) GenerateConfig() *smux.Config {
 	smuxConfig := smux.DefaultConfig()
+	kconfig.UpdateMode()
 	smuxConfig.MaxReceiveBuffer = kconfig.SmuxBuf
 	// smuxConfig.MaxStreamBuffer = kconfig.StreamBuf
 	smuxConfig.KeepAliveInterval = time.Duration(kconfig.KeepAlive) * time.Second
