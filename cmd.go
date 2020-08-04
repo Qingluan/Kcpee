@@ -126,7 +126,7 @@ func DoMain() {
 	flag.StringVar(&bookuri, "book.uri", "", "[use in local]: show ip's detail ssuri")
 	flag.StringVar(&bookcmd, "book.cmd", "", "[use in server]:run book cmd: redirect://ls | redirect://stop | redirect://ss://uri | redirect://scan@/path")
 	flag.BoolVar(&isToUri, "Url", false, "true to print config file's uri stirng")
-	flag.StringVar(&kcpConfig.Mode, "kcpmode", "fast3", "set kcp mode normal,fast, fast1, fast2, fast3")
+	flag.StringVar(&kcpConfig.Mode, "kcpmode", "fast2", "set kcp mode normal,fast, fast1, fast2, fast3")
 	flag.StringVar(&thisnodeproxyto, "red", "", "node redirect to another node like -red ss://xxxx= ")
 	flag.StringVar(&doSomeString, "Do", "", "cmd string run hear include test, gernerate and do some")
 	flag.StringVar(&SaveToFile, "output", "", "output string dst or some output ")
