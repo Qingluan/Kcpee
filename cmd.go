@@ -99,7 +99,7 @@ func DoMain() {
 	// flag.StringVar(&server, "s", "127.0.0.1:18081", "set server addr")
 	// flag.StringVar(&pwd, "p", "hello world", "set password")
 
-	flag.IntVar(&conNum, "channelNum", 2, "set connect to kcp conn")
+	flag.IntVar(&conNum, "channelNum", 1, "set connect to kcp conn")
 	flag.BoolVar(&isServer, "S", false, "set true when use server mode")
 	flag.BoolVar(&ifStartUDPClient, "U", false, "if start udp listen client")
 	flag.BoolVar(&isTunnel, "T", false, "set true when use server mode")
