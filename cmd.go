@@ -405,7 +405,7 @@ func DoMain() {
 		kcpServe := kcpserver.NewKcpServer(&cmdConfig, &kcpConfig)
 		kcpServe.SetRefreshRate(refreshRate)
 		kcpServe.Numconn = conNum
-		kcpServe.IsCompress = ifCompress
+		kcpServe.IfCompress = ifCompress
 		if isRedirect {
 			g.Println("start redirect mode")
 			utils.BOOK.Scan()
