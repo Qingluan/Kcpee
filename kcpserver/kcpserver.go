@@ -101,9 +101,9 @@ func (serve *KcpServer) Listen() {
 	block := config.GeneratePassword()
 	severString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
 	if listener, err := kcp.ListenWithOptions(severString, block, kconfig.DataShard, kconfig.ParityShard); err == nil {
-		listener.SetReadBuffer(4194304)
-		listener.SetWriteBuffer(4194304)
-
+		listener.SetReadBuffer(7194304)
+		listener.SetWriteBuffer(7194304)
+		listener.SetDSCP(0)
 		g := color.New(color.FgGreen)
 		g.Printf("accept ready \r")
 		ccCount := 0
