@@ -404,7 +404,7 @@ type KcpConfig struct {
 }
 
 func (kconfig *KcpConfig) SetAsDefault() {
-	kconfig.Mode = "fast3"
+	kconfig.Mode = "fast2"
 	kconfig.KeepAlive = 10
 	kconfig.MTU = 1400
 	kconfig.DataShard = 10
@@ -413,7 +413,7 @@ func (kconfig *KcpConfig) SetAsDefault() {
 	kconfig.RcvWnd = 2048
 	kconfig.ScavengeTTL = 600
 	kconfig.AutoExpire = 7
-	kconfig.SmuxBuf = 16777217
+	kconfig.SmuxBuf = 32777217
 	kconfig.StreamBuf = 2097152
 	kconfig.AckNodelay = false
 }
