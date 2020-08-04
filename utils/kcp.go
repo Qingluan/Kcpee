@@ -478,6 +478,7 @@ func (kcpBase *KcpBase) GetAliveNum() int {
 func (kcpBase *KcpBase) ShowConfig() {
 	ColorD(kcpBase.kconfig)
 	ColorD(kcpBase.GetSmuxConfig())
+	ColorL("Connection num:", kcpBase.Numconn)
 }
 
 // func (kcpBase *KcpBase) PipeTest(p1, p2 net.Conn) (p1data, p2data []byte) {

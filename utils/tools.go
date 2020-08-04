@@ -410,8 +410,8 @@ func (kconfig *KcpConfig) SetAsDefault() {
 	kconfig.MTU = 1400
 	kconfig.DataShard = 10
 	kconfig.ParityShard = 3
-	kconfig.SndWnd = 4096
-	kconfig.RcvWnd = 4096
+	kconfig.SndWnd = 2048
+	kconfig.RcvWnd = 2048
 	kconfig.ScavengeTTL = 600
 	kconfig.AutoExpire = 7
 	kconfig.SmuxBuf = 4194304
