@@ -135,14 +135,25 @@ func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err e
 		if kcpBase.smuxConfig == nil {
 			kcpBase.smuxConfig = kcpBase.kconfig.GenerateConfig()
 		}
+		if kcpBase.IfCompress {
 
-		if session, err = smux.Client(conn, kcpBase.smuxConfig); err == nil {
+			if session, err = smux.Client(general.NewCompStream(conn), kcpBase.smuxConfig); err == nil {
 
-			// ColorL("-> create conn in tls session:", session)
-			return session, nil
+				// ColorL("-> create conn in tls session:", session)
+				return session, nil
 
+			} else {
+				log.Fatal("tls conn -> smux session error:", err)
+			}
 		} else {
-			log.Fatal("tls conn -> smux session error:", err)
+			if session, err = smux.Client(conn, kcpBase.smuxConfig); err == nil {
+
+				// ColorL("-> create conn in tls session:", session)
+				return session, nil
+
+			} else {
+				log.Fatal("tls conn -> smux session error:", err)
+			}
 		}
 
 		return
@@ -159,9 +170,16 @@ func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err e
 		serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
 		if connection, err := kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
 			kcpBase.UpdateKcpConfig(connection)
-			if session, err = smux.Client(connection, kcpBase.smuxConfig); err == nil {
-				return session, nil
+			if kcpBase.IfCompress {
+				if session, err = smux.Client(general.NewCompStream(connection), kcpBase.smuxConfig); err == nil {
+					return session, nil
+				}
+			} else {
+				if session, err = smux.Client(connection, kcpBase.smuxConfig); err == nil {
+					return session, nil
+				}
 			}
+
 		}
 		return
 

@@ -177,7 +177,12 @@ func (serve *KcpServer) ListenInTls(config *utils.Config) {
 				go func() {
 					log.Printf("server: accepted from %s", conn.RemoteAddr())
 					tlsConn, _ := conn.(*tls.Conn)
-					serve.handleStream(rr, tlsConn)
+					if serve.IfCompress {
+						serve.handleStream(rr, general.NewCompStream(tlsConn))
+					} else {
+						serve.handleStream(rr, tlsConn)
+					}
+
 				}()
 				rr++
 				rr %= uint16(serve.Numconn)
