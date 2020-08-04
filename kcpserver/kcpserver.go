@@ -67,6 +67,7 @@ type KcpServer struct {
 	RedirectBooks  map[string]*utils.Route
 	TunnelChan     chan Channel
 	TcpListenPorts map[string]int
+	AcceptConn     int
 	// RedirectBook  *utils.Config
 }
 
@@ -108,10 +109,11 @@ func (serve *KcpServer) Listen() {
 		listener.SetDSCP(0)
 		g := color.New(color.FgGreen)
 		g.Printf("accept ready \r")
-		ccCount := 0
+		// ccCount := 0
 		for {
 			conn, err := listener.AcceptKCP()
-			g.Printf("\rAlive: %d/%d  Time:%s \r", serve.GetAliveNum(), ccCount, time.Now().String()[:20])
+			serve.AcceptConn++
+			g.Printf("\rAlive: %d/%d  Time:%s \r", serve.GetAliveNum(), serve.AcceptConn, time.Now().String()[:20])
 			// g.Println("new con:", conn.RemoteAddr())
 			serve.UpdateKcpConfig(conn)
 			if err != nil {
@@ -120,7 +122,7 @@ func (serve *KcpServer) Listen() {
 				}
 				continue
 			}
-			ccCount++
+			// ccCount++
 			if serve.IfCompress {
 				go serve.ListenMux(general.NewCompStream(conn))
 			} else {
@@ -139,8 +141,10 @@ func (serve *KcpServer) ListenMux(conn io.ReadWriteCloser) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer mux.Close()
-
+	defer func() {
+		mux.Close()
+		serve.AcceptConn--
+	}()
 	var rr uint16
 	for {
 		if stream, err := mux.AcceptStream(); err == nil {
@@ -555,9 +559,9 @@ func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 		if ne, ok := err.(*net.OpError); ok && (ne.Err == syscall.EMFILE || ne.Err == syscall.ENFILE) {
 			// log too many open file error
 			// EMFILE is process reaches open file limits, ENFILE is system limit
-			log.Println("dial error too many file!!:", err)
+			log.Println(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "dial error too many file!!:", err)
 		} else {
-			log.Println("handleRemote", host, "Err", err)
+			log.Println(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "handleRemote", host, "Err", err)
 		}
 		// log.Println("X connect to ->", host)
 		return
@@ -565,9 +569,9 @@ func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 
 	_, err = conn.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x08, 0x43})
 	if err != nil {
-		utils.ColorL("Err", err)
+		utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "Err", err)
 	}
-	utils.ColorL(num, "handleRemote", host, "ok")
+	utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "handleRemote", host, "ok")
 	// log.Println("connect to ->", host)
 
 	defer func() {

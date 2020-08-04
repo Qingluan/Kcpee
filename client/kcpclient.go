@@ -206,8 +206,8 @@ func (kclient *KcpClient) handleBodyDo(p1 net.Conn, host string, do func(p1, p2 
 				config = utils.BOOK.Get(v[0].Server)
 			} else {
 				config = utils.BOOK.RandGet()
-				// to test in background
 				if kclient.listenAddr != utils.TestProxyAddr {
+					utils.ColorL("to test in background")
 					go kclient.testURL(host)
 				}
 			}
