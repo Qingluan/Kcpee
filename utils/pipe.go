@@ -174,8 +174,9 @@ func LogCopy(src, dst net.Conn) {
 	}
 }
 
-// const bufSize = 4096
-const bufSize = 8192
+const bufSize = 4096
+
+// const bufSize = 8192
 
 // Memory optimized io.Copy function specified for this library
 func Copy(dst io.Writer, src io.Reader) (written int64, err error) {
