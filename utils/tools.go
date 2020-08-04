@@ -404,7 +404,7 @@ type KcpConfig struct {
 }
 
 func (kconfig *KcpConfig) SetAsDefault() {
-	kconfig.Mode = "fast2"
+	kconfig.Mode = "fast3"
 	kconfig.KeepAlive = 10
 	kconfig.MTU = 1400
 	kconfig.DataShard = 10
