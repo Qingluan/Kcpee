@@ -70,7 +70,7 @@ var (
 	isGBK            bool
 	ifStartUDPClient bool
 	toUri            bool
-
+	ifCompress       bool
 	// Config area
 	refreshRate int
 )
@@ -95,6 +95,7 @@ func DoMain() {
 	flag.BoolVar(&isChangeConfig, "update", false, "change running config file")
 	flag.BoolVar(&isGBK, "gbk", false, "change stdio charset to gbk!")
 	flag.IntVar(&ttl, "ttl", 600, "set ttl ")
+	flag.BoolVar(&ifCompress, "compress", true, "default is true. To compress data")
 	// flag.StringVar(&server, "s", "127.0.0.1:18081", "set server addr")
 	// flag.StringVar(&pwd, "p", "hello world", "set password")
 
@@ -404,6 +405,7 @@ func DoMain() {
 		kcpServe := kcpserver.NewKcpServer(&cmdConfig, &kcpConfig)
 		kcpServe.SetRefreshRate(refreshRate)
 		kcpServe.Numconn = conNum
+		kcpServe.IsCompress = ifCompress
 		if isRedirect {
 			g.Println("start redirect mode")
 			utils.BOOK.Scan()

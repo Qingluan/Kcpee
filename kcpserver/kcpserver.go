@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Qingluan/Kcpee/general"
+
 	"github.com/Qingluan/Kcpee/utils"
 	"github.com/fatih/color"
 	"github.com/xtaci/kcp-go"
@@ -117,7 +119,11 @@ func (serve *KcpServer) Listen() {
 				continue
 			}
 			ccCount++
-			go serve.ListenMux(conn)
+			if serve.IfCompress {
+				go serve.ListenMux(general.NewCompStream(conn))
+			} else {
+				go serve.ListenMux(conn)
+			}
 		}
 	} else {
 		log.Fatal(err)
@@ -236,7 +242,7 @@ func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 					config := b.GetConfig()
 					if config.Method != "tls" {
 						session := serve.WithSession(config, rr)
-						fmt.Println("route ->", utils.FGCOLORS[2](config.Server.(string)))
+						utils.ColorL("forward ->", config.Server.(string))
 						serve.handleSession(session, stream, true, raw)
 					} else {
 						tconfig, err := config.ToTlsConfig()

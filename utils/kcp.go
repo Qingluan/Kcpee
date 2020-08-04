@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Qingluan/Kcpee/general"
 	"github.com/xtaci/kcp-go"
 	"github.com/xtaci/smux"
 )
@@ -27,6 +28,7 @@ type KcpBase struct {
 	IsHeartBeat      bool
 	Role             string
 	Messages         chan string
+	IfCompress       bool
 	muxes            []struct {
 		session *smux.Session
 		ttl     time.Time
@@ -87,11 +89,33 @@ func (kcpBase *KcpBase) ReConnection() (session *smux.Session, err error) {
 	serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
 	if connection, err := kcp.DialWithOptions(serverString, block, kcpBase.kconfig.DataShard, kcpBase.kconfig.ParityShard); err == nil {
 		kcpBase.UpdateKcpConfig(connection)
-		if session, err = smux.Client(connection, kcpBase.smuxConfig); err == nil {
-			return session, nil
+
+		if kcpBase.IfCompress {
+			if session, err = smux.Client(general.NewCompStream(connection), kcpBase.smuxConfig); err == nil {
+				return session, nil
+			}
+		} else {
+			if session, err = smux.Client(connection, kcpBase.smuxConfig); err == nil {
+				return session, nil
+			}
 		}
+
 	}
 	return
+}
+
+func (serv *KcpBase) ListenUDP(ip string, port int) {
+	// serverString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
+	// ip, _, _ := net.SplitHostPort(l.Addr().String())
+	addr := net.UDPAddr{
+		Port: port,
+		IP:   net.ParseIP(ip),
+	}
+	c, err := net.ListenUDP("udp", &addr)
+	if err != nil {
+		return
+	}
+	go serv.HandleUDP(c)
 }
 
 func (kcpBase *KcpBase) createConn(config *Config) (session *smux.Session, err error) {
