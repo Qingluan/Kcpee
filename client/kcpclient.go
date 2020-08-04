@@ -76,7 +76,7 @@ func (conn *KcpClient) Listen(listenAddr string, ifStartUdpListener ...bool) (er
 	if len(utils.AutoMap) > 0 {
 		conn.useAutoMap = true
 	}
-	acceptnum := 0
+	// acceptnum := 0
 	if conn.Role == "client" {
 		go utils.SpeedShow()
 	}
@@ -86,16 +86,11 @@ func (conn *KcpClient) Listen(listenAddr string, ifStartUdpListener ...bool) (er
 		if TO_STOP {
 			break
 		}
-		if conn.Role == "tester" && conn.GetAliveNum() > conn.Numconn {
-			time.Sleep(10 * time.Millisecond)
-			continue
-		}
+		// if conn.Role == "tester" && conn.GetAliveNum() > conn.Numconn {
+		// 	time.Sleep(10 * time.Millisecond)
+		// 	continue
+		// }
 		p1, err := ln.Accept()
-		// utils.ColorL("socks5 <-- ", p1.RemoteAddr())
-		acceptnum++
-		if acceptnum%20 == 0 {
-			// utils.ColorL("accept tcp:", acceptnum)
-		}
 
 		if err != nil {
 			if !strings.Contains(err.Error(), "too many open files") {
@@ -179,10 +174,7 @@ func (kclient *KcpClient) handleSocks5TcpAndUDP(p1 net.Conn) {
 	// 	utils.ColorL("socks5 -->", host)
 	// }
 	if err != nil {
-		// utils.ColorL("Err socks5:", err)
-	}
-	if err != nil {
-		// log.Println("error getting request:", err)
+		log.Println("error getting request:", err)
 		return
 	}
 	kclient.handleBody(p1, host, raw)

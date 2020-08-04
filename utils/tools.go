@@ -401,6 +401,7 @@ type KcpConfig struct {
 	SmuxBuf      int    `json:"smuxbuf"`
 	StreamBuf    int    `json:"streambuf"`
 	AckNodelay   bool   `json:"acknodelay"`
+	SocketBuf    int    `json:"socketbuf"`
 }
 
 func (kconfig *KcpConfig) SetAsDefault() {
@@ -413,9 +414,10 @@ func (kconfig *KcpConfig) SetAsDefault() {
 	kconfig.RcvWnd = 4096
 	kconfig.ScavengeTTL = 600
 	kconfig.AutoExpire = 7
-	kconfig.SmuxBuf = 32777217
+	kconfig.SmuxBuf = 4194304
 	kconfig.StreamBuf = 2097152
 	kconfig.AckNodelay = false
+	kconfig.SocketBuf = 4194304
 }
 
 func (kconfig *KcpConfig) UpdateMode() {
@@ -436,8 +438,9 @@ func (kconfig *KcpConfig) UpdateMode() {
 func (kconfig *KcpConfig) GenerateConfig() *smux.Config {
 	smuxConfig := smux.DefaultConfig()
 	kconfig.UpdateMode()
+
 	smuxConfig.MaxReceiveBuffer = kconfig.SmuxBuf
-	// smuxConfig.MaxStreamBuffer = kconfig.StreamBuf
+	smuxConfig.MaxStreamBuffer = kconfig.StreamBuf
 	smuxConfig.KeepAliveInterval = time.Duration(kconfig.KeepAlive) * time.Second
 	if err := smux.VerifyConfig(smuxConfig); err != nil {
 		log.Fatalf("%+v", err)

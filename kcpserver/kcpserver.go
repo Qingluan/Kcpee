@@ -102,8 +102,9 @@ func (serve *KcpServer) Listen() {
 	severString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
 	serve.ShowConfig()
 	if listener, err := kcp.ListenWithOptions(severString, block, kconfig.DataShard, kconfig.ParityShard); err == nil {
-		listener.SetReadBuffer(7194304)
-		listener.SetWriteBuffer(7194304)
+		listener.SetReadBuffer(kconfig.SocketBuf)
+		listener.SetWriteBuffer(kconfig.SocketBuf)
+
 		listener.SetDSCP(0)
 		g := color.New(color.FgGreen)
 		g.Printf("accept ready \r")
@@ -133,6 +134,7 @@ func (serve *KcpServer) Listen() {
 
 func (serve *KcpServer) ListenMux(conn io.ReadWriteCloser) {
 	sconfig := serve.GetSmuxConfig()
+
 	mux, err := smux.Server(conn, sconfig)
 	if err != nil {
 		log.Fatal(err)

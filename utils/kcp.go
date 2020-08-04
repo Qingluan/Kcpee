@@ -478,6 +478,7 @@ func (kcpBase *KcpBase) GetAliveNum() int {
 
 func (kcpBase *KcpBase) ShowConfig() {
 	ColorD(kcpBase.kconfig)
+	ColorD(kcpBase.GetSmuxConfig())
 }
 
 // func (kcpBase *KcpBase) PipeTest(p1, p2 net.Conn) (p1data, p2data []byte) {
@@ -492,26 +493,6 @@ func (kcpBase *KcpBase) Pipe(p1, p2 net.Conn) {
 	streamCopy := func(dst io.Writer, src io.ReadCloser, fr, to net.Addr) {
 		// startAt := time.Now()
 		Copy(dst, src)
-
-		// if err != nil {
-		// 	r := color.New(color.FgRed)
-		// 	r.Println("error : ", err)
-		// }
-		// speedF := float64(n) / time.Since(startAt).Seconds()
-
-		// if kcpBase.Role == "client" {
-		// go SendSpeedMsg(p2.RemoteAddr().String(), n, speedF)
-		// } else if kcpBase.Role == "tester" {
-
-		// } else {
-		// endAt := time.Now().Sub(startAt)
-		// chn := float32(n) / 1024.0
-		// if n == 0 && err != nil {
-		// 	log.Print(err.Error() + "\r")
-		// }
-		// ColorL(fmt.Sprint("alive: ", kcpBase.aliveConn), fmt.Sprint("passed: ", FGCOLORS[1](chn))+"Kb", fmt.Sprint(FGCOLORS[0](p1.RemoteAddr()), "->", FGCOLORS[0](p2.RemoteAddr())), fmt.Sprint("Used:", endAt), "\r")
-		// }
-
 		p1.Close()
 		p2.Close()
 		// }()
