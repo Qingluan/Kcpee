@@ -416,7 +416,7 @@ func (kconfig *KcpConfig) SetAsDefault() {
 	kconfig.AutoExpire = 7
 	kconfig.SmuxBuf = 4194304
 	kconfig.StreamBuf = 2097152
-	kconfig.AckNodelay = true
+	kconfig.AckNodelay = false
 	kconfig.SocketBuf = 4194304
 }
 
