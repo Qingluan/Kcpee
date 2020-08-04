@@ -405,7 +405,7 @@ type KcpConfig struct {
 }
 
 func (kconfig *KcpConfig) SetAsDefault() {
-	kconfig.Mode = "fast3"
+	kconfig.Mode = "fast4"
 	kconfig.KeepAlive = 10
 	kconfig.MTU = 1400
 	kconfig.DataShard = 10
@@ -431,6 +431,9 @@ func (kconfig *KcpConfig) UpdateMode() {
 		kconfig.NoDelay, kconfig.Interval, kconfig.Resend, kconfig.NoCongestion = 1, 20, 2, 1
 	case "fast3":
 		kconfig.NoDelay, kconfig.Interval, kconfig.Resend, kconfig.NoCongestion = 1, 10, 2, 1
+
+	case "fast4":
+		kconfig.NoDelay, kconfig.Interval, kconfig.Resend, kconfig.NoCongestion = 1, 5, 2, 1
 	}
 	ColorL("kcp mode", kconfig.Mode)
 }
