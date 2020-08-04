@@ -197,6 +197,7 @@ func DoMain() {
 			conn := client.NewKcpClient(&cmdConfig, &kcpConfig)
 			// g.Println("run client cmd:", bookcmd)
 			conn.Numconn = conNum
+			// conn.IfCompress = ifCompress
 			conn.CmdString("redirect://kill-my-life")
 
 			os.Exit(0)
@@ -321,15 +322,18 @@ func DoMain() {
 		conn := client.NewKcpClient(&cmdConfig, &kcpConfig)
 		g.Println("run client cmd:", bookcmd)
 		conn.Numconn = conNum
+		conn.IfCompress = ifCompress
 		conn.CmdString(bookcmd)
 		return
 	}
 	if thisnodeproxyto != "" {
 		conn := client.NewKcpClient(&cmdConfig, &kcpConfig)
+		conn.IfCompress = ifCompress
 		conn.Numconn = 5
 		conn.CmdString("redirect://" + thisnodeproxyto)
 		conn = client.NewKcpClient(&cmdConfig, &kcpConfig)
 		conn.Numconn = 5
+		conn.IfCompress = ifCompress
 		config := utils.ParseURI(thisnodeproxyto)
 		conn.CmdString("redirect://start@" + config.Server.(string))
 		os.Exit(0)
@@ -438,12 +442,14 @@ func DoMain() {
 				cmd.Run()
 			}
 			var conn = client.NewKcpClient(&cmdConfig, &kcpConfig)
+			conn.IfCompress = ifCompress
 			if isStatus {
 				conn.Role = "client"
 			}
 			if isStartTest {
 				testConn := client.NewKcpClient(&cmdConfig, &kcpConfig)
 				testConn.Numconn = 10
+				conn.IfCompress = ifCompress
 				testConn.Role = "tester"
 
 				go testConn.Listen(utils.TestProxyAddr)
@@ -451,6 +457,7 @@ func DoMain() {
 
 			// conn.Init(nil)
 			conn.Numconn = conNum
+			conn.IfCompress = ifCompress
 			if isHttpProxy {
 				go func() {
 					// client.ProxySet("http://localhost:10091")
