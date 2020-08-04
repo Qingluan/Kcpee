@@ -80,6 +80,8 @@ func (conn *KcpClient) Listen(listenAddr string, ifStartUdpListener ...bool) (er
 	if conn.Role == "client" {
 		go utils.SpeedShow()
 	}
+	conn.ShowConfig()
+
 	for {
 		if TO_STOP {
 			break

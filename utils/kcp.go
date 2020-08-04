@@ -476,6 +476,10 @@ func (kcpBase *KcpBase) GetAliveNum() int {
 	return kcpBase.aliveConn
 }
 
+func (kcpBase *KcpBase) ShowConfig() {
+	ColorD(kcpBase.kconfig)
+}
+
 // func (kcpBase *KcpBase) PipeTest(p1, p2 net.Conn) (p1data, p2data []byte) {
 // 	p1.
 

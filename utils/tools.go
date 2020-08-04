@@ -385,22 +385,22 @@ func parseURI(u string, cfg *Config) (string, error) {
 }
 
 type KcpConfig struct {
-	Mode         string
-	NoDelay      int
-	Interval     int
-	Resend       int
-	NoCongestion int
-	AutoExpire   int
-	ScavengeTTL  int
-	MTU          int
-	SndWnd       int
-	RcvWnd       int
-	DataShard    int
-	ParityShard  int
-	KeepAlive    int
-	SmuxBuf      int
-	StreamBuf    int
-	AckNodelay   bool
+	Mode         string `json:"mode"`
+	NoDelay      int    `json:"nodelay"`
+	Interval     int    `json:"interval"`
+	Resend       int    `json:"resend"`
+	NoCongestion int    `json:"nocongeestion"`
+	AutoExpire   int    `json:"autoexpire"`
+	ScavengeTTL  int    `json:"scavengettl"`
+	MTU          int    `json:"mtu"`
+	SndWnd       int    `json:"sndwnd"`
+	RcvWnd       int    `json:"rcvwnd"`
+	DataShard    int    `json:"datashard"`
+	ParityShard  int    `json:"parityshard"`
+	KeepAlive    int    `json:"keepalive"`
+	SmuxBuf      int    `json:"smuxbuf"`
+	StreamBuf    int    `json:"streambuf"`
+	AckNodelay   bool   `json:"acknodelay"`
 }
 
 func (kconfig *KcpConfig) SetAsDefault() {

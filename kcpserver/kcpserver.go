@@ -100,6 +100,7 @@ func (serve *KcpServer) Listen() {
 	// kconfig := smux.DefaultConfig()
 	block := config.GeneratePassword()
 	severString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
+	serve.ShowConfig()
 	if listener, err := kcp.ListenWithOptions(severString, block, kconfig.DataShard, kconfig.ParityShard); err == nil {
 		listener.SetReadBuffer(7194304)
 		listener.SetWriteBuffer(7194304)
