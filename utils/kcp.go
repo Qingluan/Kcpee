@@ -228,16 +228,14 @@ func (kcpBase *KcpBase) Init(config *Config) {
 	// ColorL("num:", kcpBase.Numconn)
 	kcpBase.Messages = make(chan string, 2)
 	numconn := uint16(kcpBase.Numconn)
-	if kcpBase.muxes == nil {
-		kcpBase.muxes = make([]struct {
-			session *smux.Session
-			ttl     time.Time
-		}, numconn)
-		kcpBase.testmuxes = make(chan struct {
-			session *smux.Session
-			ttl     time.Time
-		}, 5)
-	}
+	kcpBase.muxes = make([]struct {
+		session *smux.Session
+		ttl     time.Time
+	}, numconn)
+	// kcpBase.testmuxes = make(chan struct {
+	// 	session *smux.Session
+	// 	ttl     time.Time
+	// }, 5)
 
 	if config == nil {
 		config = kcpBase.config
@@ -438,11 +436,12 @@ func (kcpBase *KcpBase) WithSession(config *Config, id ...uint16) (session *smux
 			kcpBase.chScavenger <- kcpBase.muxes[idx].session
 			kcpBase.muxes[idx].session = kcpBase.WaitConn(config)
 			kcpBase.muxes[idx].ttl = time.Now().Add(time.Duration(kcpBase.kconfig.AutoExpire) * time.Second)
-		} else if kcpBase.muxes[idx].session.RemoteAddr().String() != config.Server.(string) {
-			sss := kcpBase.WaitConn(config)
-			kcpBase.chScavenger <- sss
-			return sss
 		}
+		// else if kcpBase.muxes[idx].session.RemoteAddr().String() != config.Server.(string) {
+		// 	sss := kcpBase.WaitConn(config)
+		// 	kcpBase.chScavenger <- sss
+		// 	return sss
+		// }
 	}
 
 	session = kcpBase.muxes[idx].session
