@@ -139,33 +139,33 @@ func ColorM(args ...interface{}) {
 }
 
 func ColorL(args ...interface{}) {
-	yellow := color.New(color.FgYellow).SprintFunc()
-	red := color.New(color.FgRed).SprintFunc()
-	green := color.New(color.FgGreen).SprintFunc()
-	blue := color.New(color.FgBlue).SprintFunc()
-	var S string
-	useR := false
-	if args[len(args)-1] == "\r" {
-		useR = true
-		args = args[:len(args)-1]
-	}
-	for i, arg := range args {
-		switch i % 4 {
-		case 0:
-			S += green(fmt.Sprint("[", arg, "]"))
-		case 1:
-			S += yellow(fmt.Sprint("[", arg, "]"))
-		case 2:
-			S += blue(fmt.Sprint("[", arg, "]"))
-		case 3:
-			S += red(fmt.Sprint("[", arg, "]"))
-		}
-	}
-	if useR {
-		fmt.Print(S, "                   \r")
-	} else {
-		fmt.Println(S)
-	}
+	// yellow := color.New(color.FgYellow).SprintFunc()
+	// red := color.New(color.FgRed).SprintFunc()
+	// green := color.New(color.FgGreen).SprintFunc()
+	// blue := color.New(color.FgBlue).SprintFunc()
+	// var S string
+	// useR := false
+	// if args[len(args)-1] == "\r" {
+	// 	useR = true
+	// 	args = args[:len(args)-1]
+	// }
+	// for i, arg := range args {
+	// 	switch i % 4 {
+	// 	case 0:
+	// 		S += green(fmt.Sprint("[", arg, "]"))
+	// 	case 1:
+	// 		S += yellow(fmt.Sprint("[", arg, "]"))
+	// 	case 2:
+	// 		S += blue(fmt.Sprint("[", arg, "]"))
+	// 	case 3:
+	// 		S += red(fmt.Sprint("[", arg, "]"))
+	// 	}
+	// }
+	// if useR {
+	// 	fmt.Print(S, "                   \r")
+	// } else {
+	// 	fmt.Println(S)
+	// }
 
 }
 

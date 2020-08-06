@@ -87,6 +87,8 @@ func DoMain() {
 	flag.IntVar(&cmdConfig.Timeout, "t", 300, "timeout in seconds")
 	flag.IntVar(&cmdConfig.LocalPort, "l", 1091, "local socks5 proxy port")
 	flag.StringVar(&cmdConfig.Method, "m", "", "encryption method, default: aes-256-cfb")
+	flag.StringVar(&cmdConfig.SSPassword, "ssp", "", "shadowsocks password")
+	flag.StringVar(&cmdConfig.SSMethod, "ssm", "", "shadowsocks encryption method, default: aes-256-gcm")
 
 	flag.StringVar(&urlsFile, "history.url", "", "url file ")
 	flag.StringVar(&routeMapFile, "route", "", "set route map json file path")
@@ -95,7 +97,7 @@ func DoMain() {
 	flag.BoolVar(&isChangeConfig, "update", false, "change running config file")
 	flag.BoolVar(&isGBK, "gbk", false, "change stdio charset to gbk!")
 	flag.IntVar(&ttl, "ttl", 600, "set ttl ")
-	flag.BoolVar(&ifCompress, "compress", true, "default is true. To compress data")
+	flag.BoolVar(&ifCompress, "compress", false, "default is true. To compress data")
 	// flag.StringVar(&server, "s", "127.0.0.1:18081", "set server addr")
 	// flag.StringVar(&pwd, "p", "hello world", "set password")
 

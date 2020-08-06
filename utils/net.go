@@ -300,6 +300,99 @@ func GetLocalRequest(conn *net.Conn) (rawaddr []byte, host string, isUdp bool, e
 	return
 }
 
+func GetSSServerRequest(conn net.Conn) (host string, raw []byte, isUdp bool, err error) {
+
+	// utils.SetStreamReadTimeout(*conn)
+	SetReadTimeout(&conn)
+	const (
+		typeIPv4 = 1 // type is ipv4 address
+		typeDm   = 3 // type is domain address
+		typeIPv6 = 4 // type is ipv6 address
+
+		lenIPv4   = 1 + net.IPv4len + 2 // 1addrType + ipv4 + 2port
+		lenIPv6   = 1 + net.IPv6len + 2 // 1addrType + ipv6 + 2port
+		lenDmBase = 1 + 1 + 2           // 1addrType + 1addrLen + 2port, plus addrLen
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var ReadTimeout = (2 * time.Second)
+	conn.SetReadDeadline(time.Now().Add(ReadTimeout))
+
+	buf := make([]byte, 260)
+	fmt.Println("GetSSServerRequest ReadFull")
+	if _, err = io.ReadFull(conn, buf[:2]); err != nil {
+		fmt.Println("server request1 err:", err)
+		return
+	}
+
+	// fmt.Println("request1 data: ", buf)
+
+	// if _, err = conn.Write([]byte{5, 0}); err != nil {
+	// 	fmt.Println("server request2 err:", err)
+	// 	return
+	// }
+
+	// if _, err = io.ReadFull(conn, buf[:3]); err != nil {
+	// 	fmt.Println("server request3 err:", err)
+	// 	return
+	// }
+
+	idType := (buf[0] & 0xF)
+	ColorL("isType", idType)
+	reqLen := -1
+
+	conn.SetReadDeadline(time.Now().Add(ReadTimeout))
+	switch idType {
+	case typeIPv4:
+		reqLen = lenIPv4
+		if _, err = io.ReadFull(conn, buf[1:reqLen]); err != nil {
+			return
+		}
+	case typeIPv6:
+		reqLen = lenIPv6
+		if _, err = io.ReadFull(conn, buf[1:reqLen]); err != nil {
+			return
+		}
+	case typeDm:
+		reqLen = int(buf[1]) + lenDmBase
+		if reqLen > 260 {
+			err = errors.New("header error")
+			return
+		}
+		if _, err = io.ReadFull(conn, buf[2:reqLen]); err != nil {
+			return
+		}
+	default:
+		err = errors.New("socks5 unsupported type")
+		return
+	}
+
+	// fmt.Println("request2 data: ", buf)
+
+	port := ""
+	switch idType {
+	case typeIPv4:
+		host = net.IP(buf[1 : 1+net.IPv4len]).String()
+		port = strconv.Itoa((int(buf[1+net.IPv4len]) << 8) | int(buf[1+net.IPv4len+1]))
+	case typeIPv6:
+		host = net.IP(buf[1 : 1+net.IPv6len]).String()
+		port = strconv.Itoa((int(buf[1+net.IPv6len]) << 8) | int(buf[1+net.IPv6len+1]))
+	case typeDm:
+		host = string(buf[2 : 2+buf[1]])
+		port = strconv.Itoa((int(buf[2+int(buf[1])]) << 8) | int(buf[2+int(buf[1])+1]))
+	}
+	// ColorL("buf", buf)
+	// port := binary.BigEndian.Uint16(buf[reqLen-2 : reqLen])
+	// host = net.JoinHostPort(host, strconv.Itoa(int(port)))
+	host = net.JoinHostPort(host, port)
+
+	conn.SetReadDeadline(time.Time{})
+	return
+}
+
 func GetServerRequest(conn net.Conn) (host string, raw []byte, isUdp bool, err error) {
 
 	// utils.SetStreamReadTimeout(*conn)

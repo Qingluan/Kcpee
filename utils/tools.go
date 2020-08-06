@@ -63,6 +63,10 @@ type Config struct {
 	// The order of servers in the client config is significant, so use array
 	// instead of map to preserve the order.
 	ServerPassword string `json:"server_password"`
+
+	// shadowsocks options
+	SSPassword string `json:"ss_password"`
+	SSMethod   string `json:"ss_method"`
 }
 
 // GetBook reutrn book
@@ -204,7 +208,7 @@ func (config *Config) GeneratePassword() (en kcp.BlockCrypt) {
 		klen = 16
 	}
 	mainMethod := strings.Split(config.Method, "-")[0]
-	keyData := pbkdf2.Key([]byte(config.Password), []byte("demo salt"), 4096, klen, sha1.New)
+	keyData := pbkdf2.Key([]byte(config.Password), []byte("kcp-go"), 4096, klen, sha1.New)
 
 	switch mainMethod {
 
@@ -405,9 +409,9 @@ type KcpConfig struct {
 }
 
 func (kconfig *KcpConfig) SetAsDefault() {
-	kconfig.Mode = "fast4"
+	// kconfig.Mode = "fast2"
 	kconfig.KeepAlive = 10
-	kconfig.MTU = 1400
+	kconfig.MTU = 1350
 	kconfig.DataShard = 10
 	kconfig.ParityShard = 3
 	kconfig.SndWnd = 2048
@@ -416,7 +420,7 @@ func (kconfig *KcpConfig) SetAsDefault() {
 	kconfig.AutoExpire = 7
 	kconfig.SmuxBuf = 4194304
 	kconfig.StreamBuf = 2097152
-	kconfig.AckNodelay = false
+	kconfig.AckNodelay = true
 	kconfig.SocketBuf = 4194304
 }
 
@@ -441,7 +445,7 @@ func (kconfig *KcpConfig) UpdateMode() {
 func (kconfig *KcpConfig) GenerateConfig() *smux.Config {
 	smuxConfig := smux.DefaultConfig()
 	kconfig.UpdateMode()
-
+	// smuxConfig.Version = 2
 	smuxConfig.MaxReceiveBuffer = kconfig.SmuxBuf
 	smuxConfig.MaxStreamBuffer = kconfig.StreamBuf
 	smuxConfig.KeepAliveInterval = time.Duration(kconfig.KeepAlive) * time.Second

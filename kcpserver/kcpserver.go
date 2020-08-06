@@ -124,8 +124,10 @@ func (serve *KcpServer) Listen() {
 			}
 			// ccCount++
 			if serve.IfCompress {
+				utils.ColorL("compress")
 				go serve.ListenMux(general.NewCompStream(conn))
 			} else {
+				utils.ColorL("no compress")
 				go serve.ListenMux(conn)
 			}
 		}
@@ -149,6 +151,7 @@ func (serve *KcpServer) ListenMux(conn io.ReadWriteCloser) {
 	for {
 		if stream, err := mux.AcceptStream(); err == nil {
 			serve.AddAlive()
+			// utils.ColorL("ListenMux")
 			go serve.handleStream(rr, stream)
 		} else {
 			break
@@ -198,10 +201,45 @@ func (serve *KcpServer) ListenInTls(config *utils.Config) {
 	}
 }
 
+// convert request shadowsocks stream to kcp stream
+// convert response kcp stream to shadowsocks stream
+func (serve *KcpServer) convertStreamByShadowsocks(stream net.Conn) (net.Conn, error) {
+	config := serve.GetConfig()
+
+	password := config.SSPassword
+	key := []byte{}
+	cipher := config.SSMethod
+	// utils.ColorL("server request")
+	ciph, err := PickCipher(cipher, key, password)
+	if err != nil {
+		utils.ColorL("pickcipher err:", err)
+		return nil, err
+	}
+	stream = ciph.StreamConn(stream)
+	return stream, nil
+}
+
 func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 	// g := color.New(color.FgGreen)
 	// utils.ColorL("incomming :", stream.RemoteAddr())
-	host, raw, isUdp, err := utils.GetServerRequest(stream)
+	config := serve.GetConfig()
+	var host string
+	var raw []byte
+	var isUdp bool
+	var err error
+	// host, raw, isUdp, err := utils.GetServerRequest(stream)
+
+	if config.SSPassword != "" {
+		stream, err = serve.convertStreamByShadowsocks(stream)
+		if err != nil {
+			utils.ColorL("convert err:", err)
+			return err
+		}
+		host, raw, isUdp, err = utils.GetSSServerRequest(stream)
+	} else {
+		host, raw, isUdp, err = utils.GetServerRequest(stream)
+	}
+
 	fromHost := strings.Split(stream.RemoteAddr().String(), ":")[0]
 	if err != nil {
 		log.Println("getRequest:", err)
@@ -567,10 +605,10 @@ func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 		return
 	}
 
-	_, err = conn.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x08, 0x43})
-	if err != nil {
-		utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "Err", err)
-	}
+	// _, err = conn.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x08, 0x43})
+	// if err != nil {
+	// 	utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "Err", err)
+	// }
 	utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "handleRemote", host, "ok")
 	// log.Println("connect to ->", host)
 
