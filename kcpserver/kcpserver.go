@@ -86,7 +86,9 @@ func NewKcpServer(config *utils.Config, kconfig *utils.KcpConfig) (kcpServer *Kc
 
 // Listen for kcp
 func (serve *KcpServer) Listen() {
-	config := serve.GetConfig()
+	configcopy := serve.GetConfig()
+	config := &utils.Config{}
+	utils.DeepCopy(config, configcopy)
 
 	// tls server listener
 	if config.Method == "tls" {
@@ -204,44 +206,48 @@ func (serve *KcpServer) ListenInTls(config *utils.Config) {
 func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 	// g := color.New(color.FgGreen)
 	// utils.ColorL("incomming :", stream.RemoteAddr())
-	// var host string
-	// var raw []byte
-	// var isUdp bool
-	// var err error
+	var host string
+	var raw []byte
+	var isUdp bool
+	var err error
 
 	// utils.ColorL("server request")
 
-	// config := serve.GetConfig()
+	config := serve.GetConfig()
 
-	// password := config.SSPassword
-	// key := []byte{}
-	// cipher := config.SSMethod
-	// ciph, _ := PickCipher(cipher, key, password)
-	// stream = ciph.StreamConn(stream)
-
-	// host, raw, isUdp, err := utils.GetSSServerRequest(stream)
+	password := config.SSPassword
+	key := []byte{}
+	cipher := config.SSMethod
+	ciph, _ := PickCipher(cipher, key, password)
+	stream = ciph.StreamConn(stream)
+	switch serve.Plugin {
+	case "ss":
+		host, raw, isUdp, err = utils.GetSSServerRequest(stream)
+	default:
+		host, raw, isUdp, err = utils.GetServerRequest(stream)
+	}
 	// utils.ColorL("raw:", raw)
 
-	utils.ColorL("start handle stream")
-	host, raw, isUdp, err := utils.GetServerRequest(stream)
-	utils.ColorL("err:", err)
-	if err != nil {
-		config := serve.GetConfig()
+	// utils.ColorL("start handle stream")
+	// host, raw, isUdp, err := utils.GetServerRequest(stream)
+	// utils.ColorL("err:", err)
+	// if err != nil {
+	// 	config := serve.GetConfig()
 
-		password := config.SSPassword
-		key := []byte{}
-		cipher := config.SSMethod
-		ciph, _ := PickCipher(cipher, key, password)
+	// 	password := config.SSPassword
+	// 	key := []byte{}
+	// 	cipher := config.SSMethod
+	// 	ciph, _ := PickCipher(cipher, key, password)
 
-		stream2 := ciph.NewStreamConn(stream)
-		// stream = ciph.StreamConn(stream)
-		// utils.ColorL("raw:", raw)
-		raw, host, isUdp, err = stream2.ParseSSHeader(raw)
-		fmt.Println("ss de:", host, "raw", raw)
-		stream2.LastAhead = nil
-		stream = ciph.StreamConn(stream)
-		// host, raw, isUdp, err := utils.GetSSServerRequest(stream)
-	}
+	// 	stream2 := ciph.NewStreamConn(stream)
+	// 	// stream = ciph.StreamConn(stream)
+	// 	// utils.ColorL("raw:", raw)
+	// 	raw, host, isUdp, err = stream2.ParseSSHeader(raw)
+	// 	fmt.Println("ss de:", host, "raw", raw)
+	// 	stream2.LastAhead = nil
+	// 	stream = ciph.StreamConn(stream)
+	// 	// host, raw, isUdp, err := utils.GetSSServerRequest(stream)
+	// }
 
 	fromHost := strings.Split(stream.RemoteAddr().String(), ":")[0]
 	if err != nil {
@@ -252,7 +258,6 @@ func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 	// if host != "TUNNEL_CONNECT" {
 	// 	g.Println("Accept stream req: | ", host, "| isUdp: ", isUdp)
 	// }
-
 	if strings.HasPrefix(host, "redirect://") {
 		serve.handleBook(fromHost, host, stream)
 	} else {
@@ -612,7 +617,12 @@ func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 	// if err != nil {
 	// 	utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "Err", err)
 	// }
-	utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "handleRemote", host, "ok")
+	if serve.Plugin != "" {
+		utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "handleRemote", host, "Shadowsocks", "ok")
+
+	} else {
+		utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "handleRemote", host, "ok")
+	}
 	// log.Println("connect to ->", host)
 
 	defer func() {

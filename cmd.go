@@ -16,6 +16,8 @@ import (
 	"syscall"
 	"time"
 
+	"gitee.com/dark.H/go-remote-repl/remote"
+
 	// "github.com/dr/KcpEnumaElish/client"
 	"github.com/Qingluan/Kcpee/client"
 	"github.com/Qingluan/Kcpee/kcpserver"
@@ -39,6 +41,7 @@ var (
 	urlsFile         string
 	dirRoot          string
 	testURL          string
+	plugin           string
 	conNum           int
 	ttl              int
 	isChangeConfig   bool
@@ -104,6 +107,7 @@ func DoMain() {
 
 	flag.IntVar(&conNum, "channelNum", 1, "set connect to kcp conn")
 	flag.BoolVar(&isServer, "S", false, "set true when use server mode")
+	flag.StringVar(&plugin, "P", "", "set true when use server mode will start ss plugin, port = port+1")
 	flag.BoolVar(&ifStartUDPClient, "U", false, "if start udp listen client")
 	flag.BoolVar(&isTunnel, "T", false, "set true when use server mode")
 	flag.BoolVar(&configToUrl, "L", false, "trans config to urls -c /somedir/ -L ")
@@ -134,6 +138,8 @@ func DoMain() {
 	flag.StringVar(&doSomeString, "Do", "", "cmd string run hear include test, gernerate and do some")
 	flag.StringVar(&SaveToFile, "output", "", "output string dst or some output ")
 	flag.BoolVar(&toUri, "uri", false, "true to show uri")
+	flag.BoolVar(&irc, "W", false, "cli ")
+
 	flag.IntVar(&refreshRate, "config.rate", 3, "set recv msg refresh rate, default: 3s")
 	flag.Parse()
 
@@ -162,6 +168,16 @@ func DoMain() {
 			}
 		}
 
+		os.Exit(0)
+	}
+
+	if irc && server != "" {
+		conn, err := utils.UseDefaultTlsConfig(fmt.Sprintf("%s:%d", server, cmdConfig.ServerPort-1)).WithConn()
+		if err != nil {
+			log.Fatal("irc confi:", err)
+		}
+		apicon := remote.NewApiConn(conn)
+		utils.Pipe(apicon, conn)
 		os.Exit(0)
 	}
 
@@ -420,7 +436,42 @@ func DoMain() {
 			kcpServe.Init(defaultBook)
 			// kcpServe.StartTunnels(utils.BOOK.GetServers()...)
 		}
-		// kcpServe.SetConfig(&cmdConfig)
+		if plugin != "" {
+			newconfig := utils.Config{}
+			data, _ := json.Marshal(&cmdConfig)
+			json.Unmarshal(data, &newconfig)
+			newconfig.ServerPort++
+			newkcpserver := kcpserver.NewKcpServer(&newconfig, &kcpConfig)
+			newkcpserver.SetRefreshRate(refreshRate)
+			newkcpserver.Numconn = conNum
+			newkcpserver.IfCompress = ifCompress
+			newkcpserver.Plugin = plugin
+			if isRedirect {
+				g.Println("start redirect mode")
+				utils.BOOK.Scan()
+				defaultBook := utils.BOOK.Get()
+				newkcpserver.Init(defaultBook)
+			}
+			go func() {
+				serverPort := cmdConfig.ServerPort - 1
+				if listener, err := utils.UseDefaultTlsConfig(fmt.Sprintf("0.0.0.0:%d", serverPort)).WithTlsListener(); err != nil {
+					log.Println("control port start error:", err)
+				} else {
+					for {
+						if con, err := listener.Accept(); err != nil {
+							log.Println("control conn error, stop control con!")
+							break
+						} else {
+							utils.HiidenConfig(con)
+						}
+					}
+				}
+			}()
+			go func() {
+				newkcpserver.Listen()
+			}()
+
+		}
 		kcpServe.Listen()
 	} else if isTunnel {
 		var conn = client.NewKcpTunnel(&cmdConfig, &kcpConfig)

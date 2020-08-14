@@ -105,7 +105,7 @@ func newReader(r io.Reader, aead cipher.AEAD) *reader {
 
 // read and decrypt a record into the internal buffer. Return decrypted payload length and any error encountered.
 func (r *reader) read() (int, error) {
-	fmt.Println("reader read")
+	// fmt.Println("reader read")
 	// decrypt payload size
 	buf := r.buf[:2+r.Overhead()]
 	_, err := io.ReadFull(r.Reader, buf)
@@ -139,7 +139,7 @@ func (r *reader) read() (int, error) {
 
 // Read reads from the embedded io.Reader, decrypts and writes to b.
 func (r *reader) Read(b []byte) (int, error) {
-	fmt.Println("reader Read")
+	// fmt.Println("reader Read")
 	// copy decrypted bytes (if any) from previous record first
 	if len(r.leftover) > 0 {
 		n := copy(b, r.leftover)
@@ -159,7 +159,7 @@ func (r *reader) Read(b []byte) (int, error) {
 // there's no more data to write or when an error occurs. Return number of
 // bytes written to w and any error encountered.
 func (r *reader) WriteTo(w io.Writer) (n int64, err error) {
-	fmt.Println("reader WriteTo")
+	//fmt.Println("reader WriteTo")
 	// write decrypted bytes left over from previous record
 	for len(r.leftover) > 0 {
 		nw, ew := w.Write(r.leftover)
@@ -213,7 +213,7 @@ type StreamConn struct {
 
 func (c *StreamConn) initReaderFromFirstData(data []byte) error {
 	// init by first data
-	fmt.Println("StreamConn initReaderFromFirstData")
+	//fmt.Println("StreamConn initReaderFromFirstData")
 	reader := bytes.NewBuffer(data)
 	salt := make([]byte, c.SaltSize())
 	if _, err := io.ReadFull(reader, salt); err != nil {
@@ -247,13 +247,13 @@ func (c *StreamConn) ParseSSHeader(data []byte) (raw []byte, host string, isUdp 
 }
 
 func (c *StreamConn) initReader() error {
-	fmt.Println("StreamConn initReader")
+	//fmt.Println("StreamConn initReader")
 	if c.LastAhead != nil {
 		// if ahead init from first data , use it!
-		fmt.Println("StreamConn initReader first data")
+		//fmt.Println("StreamConn initReader first data")
 		c.r = newReader(c.Conn, c.LastAhead)
 	} else {
-		fmt.Println("StreamConn initReader ss")
+		//fmt.Println("StreamConn initReader ss")
 		// old ss ahead init way
 		salt := make([]byte, c.SaltSize())
 		if _, err := io.ReadFull(c.Conn, salt); err != nil {
@@ -273,7 +273,7 @@ func (c *StreamConn) initReader() error {
 }
 
 func (c *StreamConn) Read(b []byte) (int, error) {
-	fmt.Println("StreamConn Read")
+	//fmt.Println("StreamConn Read")
 	if c.r == nil {
 		if err := c.initReader(); err != nil {
 			return 0, err
@@ -283,7 +283,7 @@ func (c *StreamConn) Read(b []byte) (int, error) {
 }
 
 func (c *StreamConn) WriteTo(w io.Writer) (int64, error) {
-	fmt.Println("StreamConn WriteTo")
+	//fmt.Println("StreamConn WriteTo")
 	if c.r == nil {
 		if err := c.initReader(); err != nil {
 			return 0, err
@@ -293,7 +293,7 @@ func (c *StreamConn) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (c *StreamConn) initWriter() error {
-	fmt.Println("StreamConn initWriter")
+	//fmt.Println("StreamConn initWriter")
 	salt := make([]byte, c.SaltSize())
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
 		return err
@@ -312,8 +312,8 @@ func (c *StreamConn) initWriter() error {
 }
 
 func (c *StreamConn) Write(b []byte) (int, error) {
-	fmt.Println("StreamConn Write")
-	fmt.Println("StreamConn Write buf:", b)
+	//fmt.Println("StreamConn Write")
+	//fmt.Println("StreamConn Write buf:", b)
 	if c.w == nil {
 		if err := c.initWriter(); err != nil {
 			return 0, err
@@ -323,7 +323,7 @@ func (c *StreamConn) Write(b []byte) (int, error) {
 }
 
 func (c *StreamConn) ReadFrom(r io.Reader) (int64, error) {
-	fmt.Println("StreamConn ReadFrom")
+	//fmt.Println("StreamConn ReadFrom")
 	if c.w == nil {
 		if err := c.initWriter(); err != nil {
 			return 0, err

@@ -3,7 +3,7 @@ module github.com/Qingluan/Kcpee
 go 1.13
 
 require (
-	gitee.com/dark.H/go-remote-repl v0.0.0-20200807033721-42ad144ad920
+	gitee.com/dark.H/go-remote-repl v0.0.0-20200810094741-dbc9739bab88
 	github.com/KnicKnic/go-powershell v0.0.10
 	github.com/fatih/color v1.9.0
 	github.com/gen2brain/dlgs v0.0.0-20200211102745-b9c2664df42f
@@ -20,6 +20,7 @@ require (
 	github.com/nsf/termbox-go v0.0.0-20200418040025-38ba6e5628f1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3
+	github.com/shadowsocks/go-shadowsocks2 v0.1.2
 	github.com/templexxx/cpufeat v0.0.0-20180724012125-cef66df7f161 // indirect
 	github.com/templexxx/xor v0.0.0-20191217153810-f85b25db303b // indirect
 	github.com/tjfoc/gmsm v1.3.2 // indirect

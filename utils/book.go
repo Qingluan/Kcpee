@@ -281,3 +281,8 @@ func (book *Book) Scan(dirs ...string) (dirErr error) {
 
 	return
 }
+
+func DeepCopy(dst interface{}, src interface{}) {
+	data, _ := json.Marshal(src)
+	json.Unmarshal(data, dst)
+}

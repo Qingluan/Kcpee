@@ -322,9 +322,9 @@ func GetSSServerRequest(conn net.Conn) (host string, raw []byte, isUdp bool, err
 	conn.SetReadDeadline(time.Now().Add(ReadTimeout))
 
 	buf := make([]byte, 260)
-	fmt.Println("GetSSServerRequest ReadFull")
+	// fmt.Println("GetSSServerRequest ReadFull")
 	if _, err = io.ReadFull(conn, buf[:2]); err != nil {
-		fmt.Println("server request1 err:", err)
+		ColorL("err", "server request1 err:", err)
 		return
 	}
 
@@ -341,7 +341,7 @@ func GetSSServerRequest(conn net.Conn) (host string, raw []byte, isUdp bool, err
 	// }
 
 	idType := (buf[0] & 0xF)
-	ColorL("isType", idType)
+	// ColorL("isType", idType)
 	reqLen := -1
 
 	conn.SetReadDeadline(time.Now().Add(ReadTimeout))

@@ -29,6 +29,7 @@ type KcpBase struct {
 	Role             string
 	Messages         chan string
 	IfCompress       bool
+	Plugin           string
 	muxes            []struct {
 		session *smux.Session
 		ttl     time.Time
@@ -457,6 +458,14 @@ func (kcpBase *KcpBase) SetKcpConfig(config *KcpConfig) {
 }
 
 func (kcpBase *KcpBase) GetConfig() *Config {
+	// if kcpBase.config.SSPassword == "" {
+	if kcpBase.Plugin == "ss" {
+		kcpBase.config.SSPassword = kcpBase.config.Password
+		kcpBase.config.SSMethod = "aes-256-gcm"
+		// ColorL("Shadowsocks set", kcpBase.config.SSMethod, kcpBase.config.SSPassword)
+	}
+	// }
+
 	return kcpBase.config
 }
 
