@@ -9,6 +9,7 @@ import (
 	"net"
 
 	"github.com/Qingluan/Kcpee/internal"
+	"github.com/Qingluan/Kcpee/utils"
 )
 
 // payloadSizeMask is the maximum size of payload in bytes.
@@ -202,17 +203,20 @@ func increment(b []byte) {
 	}
 }
 
-type streamConn struct {
+type StreamConn struct {
 	net.Conn
 	Cipher
-	r *reader
-	w *writer
+	r         *reader
+	w         *writer
+	LastAhead cipher.AEAD
 }
 
-func (c *streamConn) initReader() error {
-	fmt.Println("streamConn initReader")
+func (c *StreamConn) initReaderFromFirstData(data []byte) error {
+	// init by first data
+	fmt.Println("StreamConn initReaderFromFirstData")
+	reader := bytes.NewBuffer(data)
 	salt := make([]byte, c.SaltSize())
-	if _, err := io.ReadFull(c.Conn, salt); err != nil {
+	if _, err := io.ReadFull(reader, salt); err != nil {
 		return err
 	}
 	if internal.TestSalt(salt) {
@@ -223,13 +227,53 @@ func (c *streamConn) initReader() error {
 		return err
 	}
 	internal.AddSalt(salt)
-
-	c.r = newReader(c.Conn, aead)
+	c.r = newReader(reader, aead)
+	c.LastAhead = aead
 	return nil
 }
 
-func (c *streamConn) Read(b []byte) (int, error) {
-	fmt.Println("streamConn Read")
+func (c *StreamConn) ParseSSHeader(data []byte) (raw []byte, host string, isUdp bool, err error) {
+	if c.r == nil {
+		if err = c.initReaderFromFirstData(data); err != nil {
+			return
+		}
+	}
+	// var n int
+	// decryptedSSData := make([]byte, 1400)
+	// n, err = c.Read(decryptedSSData)
+	host, raw, isUdp, err = utils.GetSSServerRequest(c)
+	// c.r.Read(raw)
+	return
+}
+
+func (c *StreamConn) initReader() error {
+	fmt.Println("StreamConn initReader")
+	if c.LastAhead != nil {
+		// if ahead init from first data , use it!
+		fmt.Println("StreamConn initReader first data")
+		c.r = newReader(c.Conn, c.LastAhead)
+	} else {
+		fmt.Println("StreamConn initReader ss")
+		// old ss ahead init way
+		salt := make([]byte, c.SaltSize())
+		if _, err := io.ReadFull(c.Conn, salt); err != nil {
+			return err
+		}
+		if internal.TestSalt(salt) {
+			return ErrRepeatedSalt
+		}
+		aead, err := c.Decrypter(salt)
+		if err != nil {
+			return err
+		}
+		internal.AddSalt(salt)
+		c.r = newReader(c.Conn, aead)
+	}
+	return nil
+}
+
+func (c *StreamConn) Read(b []byte) (int, error) {
+	fmt.Println("StreamConn Read")
 	if c.r == nil {
 		if err := c.initReader(); err != nil {
 			return 0, err
@@ -238,8 +282,8 @@ func (c *streamConn) Read(b []byte) (int, error) {
 	return c.r.Read(b)
 }
 
-func (c *streamConn) WriteTo(w io.Writer) (int64, error) {
-	fmt.Println("streamConn WriteTo")
+func (c *StreamConn) WriteTo(w io.Writer) (int64, error) {
+	fmt.Println("StreamConn WriteTo")
 	if c.r == nil {
 		if err := c.initReader(); err != nil {
 			return 0, err
@@ -248,8 +292,8 @@ func (c *streamConn) WriteTo(w io.Writer) (int64, error) {
 	return c.r.WriteTo(w)
 }
 
-func (c *streamConn) initWriter() error {
-	fmt.Println("streamConn initWriter")
+func (c *StreamConn) initWriter() error {
+	fmt.Println("StreamConn initWriter")
 	salt := make([]byte, c.SaltSize())
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
 		return err
@@ -267,9 +311,9 @@ func (c *streamConn) initWriter() error {
 	return nil
 }
 
-func (c *streamConn) Write(b []byte) (int, error) {
-	fmt.Println("streamConn Write")
-	fmt.Println("streamConn Write buf:", b)
+func (c *StreamConn) Write(b []byte) (int, error) {
+	fmt.Println("StreamConn Write")
+	fmt.Println("StreamConn Write buf:", b)
 	if c.w == nil {
 		if err := c.initWriter(); err != nil {
 			return 0, err
@@ -278,8 +322,8 @@ func (c *streamConn) Write(b []byte) (int, error) {
 	return c.w.Write(b)
 }
 
-func (c *streamConn) ReadFrom(r io.Reader) (int64, error) {
-	fmt.Println("streamConn ReadFrom")
+func (c *StreamConn) ReadFrom(r io.Reader) (int64, error) {
+	fmt.Println("StreamConn ReadFrom")
 	if c.w == nil {
 		if err := c.initWriter(); err != nil {
 			return 0, err
@@ -288,5 +332,16 @@ func (c *streamConn) ReadFrom(r io.Reader) (int64, error) {
 	return c.w.ReadFrom(r)
 }
 
+// struct
+
 // NewConn wraps a stream-oriented net.Conn with cipher.
-func NewConn(c net.Conn, ciph Cipher) net.Conn { return &streamConn{Conn: c, Cipher: ciph} }
+func NewConn(c net.Conn, ciph Cipher) net.Conn {
+	return &StreamConn{Conn: c, Cipher: ciph, LastAhead: nil}
+}
+
+func NewStreamConn(c net.Conn, cipher Cipher) *StreamConn {
+	return &StreamConn{
+		Conn:   c,
+		Cipher: cipher,
+	}
+}

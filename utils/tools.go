@@ -409,19 +409,19 @@ type KcpConfig struct {
 }
 
 func (kconfig *KcpConfig) SetAsDefault() {
-	// kconfig.Mode = "fast2"
+	// kconfig.Mode = "fast4"
 	kconfig.KeepAlive = 10
 	kconfig.MTU = 1350
 	kconfig.DataShard = 10
 	kconfig.ParityShard = 3
-	kconfig.SndWnd = 2048
-	kconfig.RcvWnd = 2048
+	kconfig.SndWnd = 2048 * 2
+	kconfig.RcvWnd = 2048 * 2
 	kconfig.ScavengeTTL = 600
 	kconfig.AutoExpire = 7
-	kconfig.SmuxBuf = 4194304
-	kconfig.StreamBuf = 2097152
-	kconfig.AckNodelay = true
-	kconfig.SocketBuf = 4194304
+	kconfig.SmuxBuf = 4194304 * 2
+	kconfig.StreamBuf = 2097152 * 2
+	kconfig.AckNodelay = false
+	kconfig.SocketBuf = 4194304 * 2
 }
 
 func (kconfig *KcpConfig) UpdateMode() {

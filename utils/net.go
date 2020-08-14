@@ -351,11 +351,13 @@ func GetSSServerRequest(conn net.Conn) (host string, raw []byte, isUdp bool, err
 		if _, err = io.ReadFull(conn, buf[1:reqLen]); err != nil {
 			return
 		}
+		raw = buf[:reqLen]
 	case typeIPv6:
 		reqLen = lenIPv6
 		if _, err = io.ReadFull(conn, buf[1:reqLen]); err != nil {
 			return
 		}
+		raw = buf[:reqLen]
 	case typeDm:
 		reqLen = int(buf[1]) + lenDmBase
 		if reqLen > 260 {
@@ -365,6 +367,7 @@ func GetSSServerRequest(conn net.Conn) (host string, raw []byte, isUdp bool, err
 		if _, err = io.ReadFull(conn, buf[2:reqLen]); err != nil {
 			return
 		}
+		raw = buf[:reqLen]
 	default:
 		err = errors.New("socks5 unsupported type")
 		return
@@ -422,17 +425,39 @@ func GetServerRequest(conn net.Conn) (host string, raw []byte, isUdp bool, err e
 	// read till we get possible domain length field
 
 	if _, err = io.ReadFull(conn, buf[:idType+1]); err != nil {
-
 		return
 	}
-
+	if buf[idVer] != 0x5 {
+		err = errors.New("not socks5 type")
+	}
 	if buf[idCmd] == socksCmdUdp {
 		isUdp = true
+	} else if buf[idCmd] == socksCmdConnect {
+
+	} else {
+		err = errors.New("not socks5 conn or udp")
+	}
+
+	if err != nil {
+		buf1 := make([]byte, 1401)
+		copy(buf1, buf[:idType+1])
+		pre := len(buf[:idType+1])
+		n, err2 := conn.Read(buf1[idType+1:])
+		if err2 != nil {
+			ColorL("copy err:", err)
+			return
+		}
+		// ColorL("buf:", buf[:idType+1])
+		// ColorL("buffer:", buf1[:n+pre])
+
+		raw = buf1[:n+pre]
+		return
 	}
 
 	// g.Printf("read %v \n", buf[:20])
 	var reqStart, reqEnd int
 	addrType := buf[idType]
+	ColorL("addrType:", addrType&AddrMask)
 	switch addrType & AddrMask {
 	case typeIPv4:
 		reqStart, reqEnd = idIP0, lenIPv4
@@ -456,7 +481,8 @@ func GetServerRequest(conn net.Conn) (host string, raw []byte, isUdp bool, err e
 		reqStart, reqEnd = idDm0, idDm0+int(buf[idDmLen])
 		raw = buf[:reqEnd]
 	default:
-		fmt.Println("Err buf:", buf)
+
+		// fmt.Println("Err buf:", buf)
 		err = fmt.Errorf("addr type %d not supported:%s", addrType&AddrMask, buf)
 		return
 	}
@@ -478,8 +504,10 @@ func GetServerRequest(conn net.Conn) (host string, raw []byte, isUdp bool, err e
 		host = string(buf[idDm0 : idDm0+int(buf[idDmLen])])
 	case typeRedirect:
 		host = string(buf[idDm0 : idDm0+int(buf[idDmLen])])
-
 		return
+
+	default:
+		err = errors.New("error in typoe")
 	}
 
 	// parse port

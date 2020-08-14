@@ -2,11 +2,14 @@ package kcpserver
 
 import (
 	"crypto/md5"
+	"crypto/sha1"
 	"errors"
+	"io"
 	"net"
 	"strings"
 
 	"github.com/Qingluan/Kcpee/shadowaead"
+	"golang.org/x/crypto/hkdf"
 )
 
 type Cipher interface {
@@ -16,6 +19,8 @@ type Cipher interface {
 
 type StreamConnCipher interface {
 	StreamConn(net.Conn) net.Conn
+	NewStreamConn(c net.Conn) *shadowaead.StreamConn
+	// StreamConn2(net.Conn) shadowaead.StreamConn
 }
 
 type PacketConnCipher interface {
@@ -72,16 +77,24 @@ func PickCipher(name string, key []byte, password string) (Cipher, error) {
 
 type aeadCipher struct{ shadowaead.Cipher }
 
+func (aead *aeadCipher) StreamConn2(c net.Conn) *shadowaead.StreamConn {
+	return shadowaead.NewConn(c, aead).(*shadowaead.StreamConn)
+}
 func (aead *aeadCipher) StreamConn(c net.Conn) net.Conn { return shadowaead.NewConn(c, aead) }
 func (aead *aeadCipher) PacketConn(c net.PacketConn) net.PacketConn {
 	return shadowaead.NewPacketConn(c, aead)
 }
 
+func (aead *aeadCipher) NewStreamConn(c net.Conn) *shadowaead.StreamConn {
+	return shadowaead.NewStreamConn(c, aead)
+}
+
 // dummy cipher does not encrypt
 type dummy struct{}
 
-func (dummy) StreamConn(c net.Conn) net.Conn             { return c }
-func (dummy) PacketConn(c net.PacketConn) net.PacketConn { return c }
+func (dummy) StreamConn(c net.Conn) net.Conn                  { return c }
+func (dummy) PacketConn(c net.PacketConn) net.PacketConn      { return c }
+func (dummy) NewStreamConn(c net.Conn) *shadowaead.StreamConn { return nil }
 
 // key-derivation function from original Shadowsocks
 func kdf(password string, keyLen int) []byte {
@@ -96,3 +109,16 @@ func kdf(password string, keyLen int) []byte {
 	}
 	return b[:keyLen]
 }
+
+func hkdfSHA1(secret, salt, info, outkey []byte) {
+	r := hkdf.New(sha1.New, secret, salt, info)
+	if _, err := io.ReadFull(r, outkey); err != nil {
+		panic(err) // should never happen
+	}
+}
+
+// func Decrypter(psk []byte, salt []byte) (cipher.AEAD, error) {
+// 	subkey := make([]byte, len(psk))
+// 	hkdfSHA1(psk, salt, []byte("ss-subkey"), subkey)
+// 	return a.makeAEAD(subkey)
+// }

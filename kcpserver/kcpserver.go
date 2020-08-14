@@ -201,43 +201,46 @@ func (serve *KcpServer) ListenInTls(config *utils.Config) {
 	}
 }
 
-// convert request shadowsocks stream to kcp stream
-// convert response kcp stream to shadowsocks stream
-func (serve *KcpServer) convertStreamByShadowsocks(stream net.Conn) (net.Conn, error) {
-	config := serve.GetConfig()
-
-	password := config.SSPassword
-	key := []byte{}
-	cipher := config.SSMethod
-	// utils.ColorL("server request")
-	ciph, err := PickCipher(cipher, key, password)
-	if err != nil {
-		utils.ColorL("pickcipher err:", err)
-		return nil, err
-	}
-	stream = ciph.StreamConn(stream)
-	return stream, nil
-}
-
 func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 	// g := color.New(color.FgGreen)
 	// utils.ColorL("incomming :", stream.RemoteAddr())
-	config := serve.GetConfig()
-	var host string
-	var raw []byte
-	var isUdp bool
-	var err error
-	// host, raw, isUdp, err := utils.GetServerRequest(stream)
+	// var host string
+	// var raw []byte
+	// var isUdp bool
+	// var err error
 
-	if config.SSPassword != "" {
-		stream, err = serve.convertStreamByShadowsocks(stream)
-		if err != nil {
-			utils.ColorL("convert err:", err)
-			return err
-		}
-		host, raw, isUdp, err = utils.GetSSServerRequest(stream)
-	} else {
-		host, raw, isUdp, err = utils.GetServerRequest(stream)
+	// utils.ColorL("server request")
+
+	// config := serve.GetConfig()
+
+	// password := config.SSPassword
+	// key := []byte{}
+	// cipher := config.SSMethod
+	// ciph, _ := PickCipher(cipher, key, password)
+	// stream = ciph.StreamConn(stream)
+
+	// host, raw, isUdp, err := utils.GetSSServerRequest(stream)
+	// utils.ColorL("raw:", raw)
+
+	utils.ColorL("start handle stream")
+	host, raw, isUdp, err := utils.GetServerRequest(stream)
+	utils.ColorL("err:", err)
+	if err != nil {
+		config := serve.GetConfig()
+
+		password := config.SSPassword
+		key := []byte{}
+		cipher := config.SSMethod
+		ciph, _ := PickCipher(cipher, key, password)
+
+		stream2 := ciph.NewStreamConn(stream)
+		// stream = ciph.StreamConn(stream)
+		// utils.ColorL("raw:", raw)
+		raw, host, isUdp, err = stream2.ParseSSHeader(raw)
+		fmt.Println("ss de:", host, "raw", raw)
+		stream2.LastAhead = nil
+		stream = ciph.StreamConn(stream)
+		// host, raw, isUdp, err := utils.GetSSServerRequest(stream)
 	}
 
 	fromHost := strings.Split(stream.RemoteAddr().String(), ":")[0]
