@@ -3,6 +3,7 @@ module github.com/Qingluan/Kcpee
 go 1.13
 
 require (
+	gitee.com/dark.H/go-remote-repl v0.0.0-20200807033721-42ad144ad920
 	github.com/KnicKnic/go-powershell v0.0.10
 	github.com/fatih/color v1.9.0
 	github.com/gen2brain/dlgs v0.0.0-20200211102745-b9c2664df42f

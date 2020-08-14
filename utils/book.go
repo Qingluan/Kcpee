@@ -83,6 +83,10 @@ func (route *Route) Mode() string {
 	return route.mode
 }
 
+func (route *Route) SetExireTime(sec int) {
+	route.ttl = time.Now().Add(time.Duration(sec) * time.Second)
+}
+
 func (route *Route) Host() string {
 	return fmt.Sprintf("%s:%d", route.config.Server.(string), route.config.ServerPort)
 }
@@ -109,6 +113,14 @@ type Book struct {
 	lastId uint16
 }
 
+func NewBook() *Book {
+
+	book := Book{
+		books:  make(map[string]Config),
+		lastId: 0,
+	}
+	return &book
+}
 func (book *Book) GetServers() (s []string) {
 	for _, v := range book.books {
 		s = append(s, fmt.Sprintf("%s:%d", v.Server.(string), v.ServerPort))

@@ -71,6 +71,7 @@ var (
 	ifStartUDPClient bool
 	toUri            bool
 	ifCompress       bool
+	irc              bool
 	// Config area
 	refreshRate int
 )
