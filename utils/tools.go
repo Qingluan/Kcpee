@@ -208,7 +208,7 @@ func (config *Config) GeneratePassword() (en kcp.BlockCrypt) {
 		klen = 16
 	}
 	mainMethod := strings.Split(config.Method, "-")[0]
-	keyData := pbkdf2.Key([]byte(config.Password), []byte("kcp-go"), 4096, klen, sha1.New)
+	keyData := pbkdf2.Key([]byte(config.Password), []byte("kcp-go"), 1024, klen, sha1.New)
 
 	switch mainMethod {
 
