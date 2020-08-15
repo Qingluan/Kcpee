@@ -222,6 +222,7 @@ func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 		if cipher == "" {
 			cipher = "aes-256-gcm"
 		}
+		utils.ColorL("Shadowsocks set", cipher, password, config.ServerPort)
 		ciph, _ := PickCipher(cipher, key, password)
 		stream = ciph.StreamConn(stream)
 		host, raw, isUdp, err = utils.GetSSServerRequest(stream)

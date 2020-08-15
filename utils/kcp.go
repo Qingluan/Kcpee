@@ -464,7 +464,7 @@ func (kcpBase *KcpBase) GetConfig() *Config {
 	if kcpBase.Plugin == "ss" {
 		kcpBase.config.SSPassword = kcpBase.config.Password
 		kcpBase.config.SSMethod = "aes-256-gcm"
-		// ColorL("Shadowsocks set", kcpBase.config.SSMethod, kcpBase.config.SSPassword)
+
 	}
 	// }
 
