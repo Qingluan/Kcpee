@@ -612,17 +612,17 @@ func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 		return
 	}
 
-	// _, err = conn.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x08, 0x43})
-	// if err != nil {
-	// 	utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "Err", err)
-	// }
-	if serve.Plugin != "" {
+	switch serve.Plugin {
+	case "ss":
 		utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "handleRemote", host, "Shadowsocks", "ok")
-
-	} else {
+	default:
+		_, err = conn.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x08, 0x43})
+		if err != nil {
+			utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "Err", err)
+		}
 		utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "handleRemote", host, "ok")
+
 	}
-	// log.Println("connect to ->", host)
 
 	defer func() {
 		if !closed {

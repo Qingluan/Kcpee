@@ -457,7 +457,7 @@ func GetServerRequest(conn net.Conn) (host string, raw []byte, isUdp bool, err e
 	// g.Printf("read %v \n", buf[:20])
 	var reqStart, reqEnd int
 	addrType := buf[idType]
-	ColorL("addrType:", addrType&AddrMask)
+	// ColorL("addrType:", addrType&AddrMask)
 	switch addrType & AddrMask {
 	case typeIPv4:
 		reqStart, reqEnd = idIP0, lenIPv4
