@@ -88,6 +88,7 @@ func (serve *KcpServer) Listen() {
 	configcopy := serve.GetConfig()
 	config := &utils.Config{}
 	utils.DeepCopy(config, configcopy)
+	var block kcp.BlockCrypt
 
 	// tls server listener
 	if config.Method == "tls" {
@@ -99,10 +100,13 @@ func (serve *KcpServer) Listen() {
 	}
 	if serve.Plugin == "ss" {
 		utils.ColorL("Shadowsocks set", config.Password, config.ServerPort)
+		block = config.GeneratePassword("ss")
+	} else {
+		block = config.GeneratePassword()
 	}
 	kconfig := serve.GetKcpConfig()
 	// kconfig := smux.DefaultConfig()
-	block := config.GeneratePassword()
+
 	severString := fmt.Sprintf("%s:%d", config.GetServerArray()[0], config.ServerPort)
 	serve.ShowConfig()
 	if listener, err := kcp.ListenWithOptions(severString, block, kconfig.DataShard, kconfig.ParityShard); err == nil {

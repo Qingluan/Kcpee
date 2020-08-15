@@ -202,13 +202,18 @@ func (config *Config) GetBookByID(id uint16) (book *Config) {
 }
 
 // GeneratePassword by config
-func (config *Config) GeneratePassword() (en kcp.BlockCrypt) {
+func (config *Config) GeneratePassword(plugin ...string) (en kcp.BlockCrypt) {
 	klen := 32
 	if strings.Contains(config.Method, "128") {
 		klen = 16
 	}
 	mainMethod := strings.Split(config.Method, "-")[0]
+
 	keyData := pbkdf2.Key([]byte(config.Password), []byte("kcp-go"), 1024, klen, sha1.New)
+
+	if plugin != nil {
+		keyData = pbkdf2.Key([]byte(config.Password), []byte("kcp-go"), 4096, klen, sha1.New)
+	}
 
 	switch mainMethod {
 
