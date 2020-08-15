@@ -64,7 +64,6 @@ func newChannel(stream net.Conn, host string) Channel {
 type KcpServer struct {
 	utils.KcpBase
 	// RedirectMode  bool
-	RedirectBooks  map[string]*utils.Route
 	TunnelChan     chan Channel
 	TcpListenPorts map[string]int
 	AcceptConn     int
@@ -215,13 +214,13 @@ func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 
 	config := serve.GetConfig()
 
-	password := config.SSPassword
-	key := []byte{}
-	cipher := config.SSMethod
-	ciph, _ := PickCipher(cipher, key, password)
-	stream = ciph.StreamConn(stream)
 	switch serve.Plugin {
 	case "ss":
+		password := config.SSPassword
+		key := []byte{}
+		cipher := config.SSMethod
+		ciph, _ := PickCipher(cipher, key, password)
+		stream = ciph.StreamConn(stream)
 		host, raw, isUdp, err = utils.GetSSServerRequest(stream)
 	default:
 		host, raw, isUdp, err = utils.GetServerRequest(stream)

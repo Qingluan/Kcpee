@@ -38,6 +38,8 @@ type KcpBase struct {
 		session *smux.Session
 		ttl     time.Time
 	}
+
+	RedirectBooks map[string]*Route
 }
 
 func (kcpBase *KcpBase) AddReverseCon() {

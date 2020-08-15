@@ -452,21 +452,7 @@ func DoMain() {
 				defaultBook := utils.BOOK.Get()
 				newkcpserver.Init(defaultBook)
 			}
-			go func() {
-				serverPort := cmdConfig.ServerPort - 1
-				if listener, err := utils.UseDefaultTlsConfig(fmt.Sprintf("0.0.0.0:%d", serverPort)).WithTlsListener(); err != nil {
-					log.Println("control port start error:", err)
-				} else {
-					for {
-						if con, err := listener.Accept(); err != nil {
-							log.Println("control conn error, stop control con!")
-							break
-						} else {
-							utils.HiidenConfig(con)
-						}
-					}
-				}
-			}()
+			go newkcpserver.HiddenConnListener()
 			go func() {
 				newkcpserver.Listen()
 			}()

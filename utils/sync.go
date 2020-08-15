@@ -113,6 +113,7 @@ func Unzip(src string, dest string) ([]string, error) {
 
 	r, err := zip.OpenReader(src)
 	if err != nil {
+		log.Println("open err:", src)
 		return filenames, err
 	}
 	defer r.Close()
@@ -246,6 +247,7 @@ func Credient(username, password string) (routeDir string, err error) {
 						url := baseURL + v
 						ColorL("sync from :", url)
 						if err = DownloadFile("config.en", url); err != nil {
+							log.Println("err sync:", err)
 							return
 						}
 					} else {
@@ -268,7 +270,11 @@ func Credient(username, password string) (routeDir string, err error) {
 				defer os.Remove("config.temp.en.zip")
 				if _, err := Unzip("config.temp.en.zip", "Kcpconfig"); err == nil {
 					routeDir = "Kcpconfig"
+				} else {
+					log.Println("unzip error:", err)
 				}
+			} else {
+				log.Println("open config.en error:", err)
 			}
 		}
 	} else {
