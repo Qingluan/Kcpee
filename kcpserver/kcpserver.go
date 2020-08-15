@@ -216,9 +216,12 @@ func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 
 	switch serve.Plugin {
 	case "ss":
-		password := config.SSPassword
+		password := config.Password
 		key := []byte{}
 		cipher := config.SSMethod
+		if cipher == "" {
+			cipher = "aes-256-gcm"
+		}
 		ciph, _ := PickCipher(cipher, key, password)
 		stream = ciph.StreamConn(stream)
 		host, raw, isUdp, err = utils.GetSSServerRequest(stream)
