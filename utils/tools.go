@@ -209,7 +209,7 @@ func (config *Config) GeneratePassword(plugin ...string) (en kcp.BlockCrypt) {
 	}
 	mainMethod := strings.Split(config.Method, "-")[0]
 
-	keyData := pbkdf2.Key([]byte(config.Password), []byte("kcp-go"), 1024, klen, sha1.New)
+	keyData := pbkdf2.Key([]byte(config.Password), []byte("demo salt"), 1024, klen, sha1.New)
 
 	if plugin != nil {
 		keyData = pbkdf2.Key([]byte(config.Password), []byte("kcp-go"), 4096, klen, sha1.New)
