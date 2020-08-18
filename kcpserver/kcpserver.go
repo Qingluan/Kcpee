@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"time"
 
+	"gitee.com/dark.H/go-remote-repl/remote"
+
 	"github.com/Qingluan/Kcpee/general"
 
 	"github.com/Qingluan/Kcpee/utils"
@@ -89,7 +91,9 @@ func (serve *KcpServer) Listen() {
 	config := &utils.Config{}
 	utils.DeepCopy(config, configcopy)
 	var block kcp.BlockCrypt
-
+	if _, ok := remote.MemDB.Kd["ip who use"]; !ok {
+		remote.MemDB.Kd["ip who use"] = make(remote.Gi)
+	}
 	// tls server listener
 	if config.Method == "tls" {
 		utils.ColorL("<======= Tls Server Mode =======>")
@@ -258,6 +262,7 @@ func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 	// }
 
 	fromHost := strings.Split(stream.RemoteAddr().String(), ":")[0]
+	remote.MemDB.Kd["ip who use"][fromHost] = time.Now().String()
 	if err != nil {
 		log.Println("getRequest:", err)
 		stream.Close()

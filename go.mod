@@ -3,7 +3,7 @@ module github.com/Qingluan/Kcpee
 go 1.14
 
 require (
-	gitee.com/dark.H/go-remote-repl v0.0.0-20200812095823-98927ba2ed07
+	gitee.com/dark.H/go-remote-repl v0.0.0-20200817093001-da9166510080
 	github.com/fatih/color v1.9.0
 	github.com/gen2brain/dlgs v0.0.0-20200211102745-b9c2664df42f
 	github.com/gizak/termui/v3 v3.1.0

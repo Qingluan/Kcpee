@@ -71,7 +71,7 @@ func Build(name, host, port, pwd string, config utils.Config) {
 		// run single command
 		// fmt.Println(host, "Connected", pwd)
 		// cmdStr := fmt.Sprintf(`apt install -y wget;yum install -y wget; rm Kcpee-linux; wget -c -q 'https://github.com/Qingluan/kcpee/releases/download/v1.2/Kcpee-linux' && chmod +x Kcpee-linux ; ulimit -n 4096 ;  ./Kcpee-linux -S -R  -d -k "%s" -p %d  && rm ./Kcpee-linux`, config.Password, config.ServerPort)
-		cmdStr := fmt.Sprintf(`wget -c -q 'https://github.com/Qingluan/kcpee/releases/download/v1.2/Kcpee-linux' && chmod +x Kcpee-linux; ps aux | grep Kcpee-linux | egrep -v '(grep|egrep|wget)' | awk '{print $2}' |xargs kill -9 ;ulimit -n 4096 ;  ./Kcpee-linux -S -R  -d -k "%s" -p %d; rm ./Kcpee-linux`, config.Password, config.ServerPort)
+		cmdStr := fmt.Sprintf(`wget -c -q 'https://github.com/Qingluan/kcpee/releases/download/v1.3/Kcpee-linux' && chmod +x Kcpee-linux; ps aux | grep Kcpee-linux | egrep -v '(grep|egrep|wget)' | awk '{print $2}' |xargs kill -9 ;ulimit -n 4096 ;  ./Kcpee-linux -S -R  -d -k "%s" -p %d -P ss; rm ./Kcpee-linux`, config.Password, config.ServerPort)
 		// fmt.Println(cmdStr)
 		err := sess.Run(cmdStr)
 		// fmt.Println(host, "finished")

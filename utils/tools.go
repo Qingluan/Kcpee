@@ -43,6 +43,8 @@ var (
 	HOME, _              = os.UserHomeDir()
 	NORMAL_OPTIMISE_FILE = filepath.Join(HOME, "Desktop", "route.map.json")
 	NORMAL_CONFIG_ROOT   = filepath.Join(HOME, "Desktop", "routes")
+	SALT                 = "demo salt"
+	CRY_LEN              = 4096
 )
 
 // Config can use file to load
@@ -67,6 +69,8 @@ type Config struct {
 	// shadowsocks options
 	SSPassword string `json:"ss_password"`
 	SSMethod   string `json:"ss_method"`
+	SALT       string `json:"salt"`
+	EBUFLEN    int    `json:"buflen"`
 }
 
 // GetBook reutrn book
@@ -208,11 +212,15 @@ func (config *Config) GeneratePassword(plugin ...string) (en kcp.BlockCrypt) {
 		klen = 16
 	}
 	mainMethod := strings.Split(config.Method, "-")[0]
+	var keyData []byte
+	if config.SALT == "" && config.EBUFLEN == 0 {
+		keyData = pbkdf2.Key([]byte(config.Password), []byte("demo salt"), 1024, klen, sha1.New)
 
-	keyData := pbkdf2.Key([]byte(config.Password), []byte("demo salt"), 1024, klen, sha1.New)
-
-	if plugin != nil {
-		keyData = pbkdf2.Key([]byte(config.Password), []byte("kcp-go"), 4096, klen, sha1.New)
+		if plugin != nil {
+			keyData = pbkdf2.Key([]byte(config.Password), []byte("kcp-go"), 4096, klen, sha1.New)
+		}
+	} else {
+		keyData = pbkdf2.Key([]byte(config.Password), []byte(config.SALT), config.EBUFLEN, klen, sha1.New)
 	}
 
 	switch mainMethod {

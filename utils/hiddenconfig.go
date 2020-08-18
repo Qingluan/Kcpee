@@ -111,28 +111,41 @@ func (kcp *KcpBase) SetRedirectIRC(man *remote.Man, ip string) {
 				log.Println("talk error:", err)
 				return
 			}
-			choose, err := man.Talk(false, cs...)
+			choose, err := man.Choose("One to Forward", cs...)
 			if err != nil {
 				log.Println("talk error:", err)
 				return
 			}
-			usetime, err := man.Talk(true, "86400", "3600")
+			version, err := man.Choose("Phone version / Pc", "Phone", "Pc normal")
 			if err != nil {
 				log.Println("talk time error:", err)
 				return
 			}
-			if usetime != "" {
-				t, err := strconv.Atoi(usetime)
-				if err != nil {
-					t = 86400
-				}
+			if version != "" {
+				t := 86400
 				if choose != "" {
 					keys := strings.SplitN(choose, ":", 2)
 					conf := book.Get(keys[0])
 					route := new(Route)
+					if version == "Phone" {
+						conf.ServerPort--
+						conf.SALT = "kcp-go"
+						conf.EBUFLEN = 4096
+					} else {
+						conf.SALT = "demo salt"
+						conf.EBUFLEN = 1024
+					}
 					route.SetMode("proxy")
 					route.SetExireTime(t)
 					route.SetConfig(conf)
+					chooseIps := []string{}
+					for ip := range remote.MemDB.Kd["ip who use"] {
+						chooseIps = append(chooseIps, ip)
+					}
+					ip, err := man.Choose("choose which ip use forward:", chooseIps...)
+					if err != nil {
+						return
+					}
 					kcp.RedirectBooks[ip] = route
 
 					ColorL("redirect ->", route.config)
