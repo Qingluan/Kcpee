@@ -135,7 +135,7 @@ func (kcp *KcpBase) SetRedirectIRC(man *remote.Man, ip string) {
 					conf := book.Get(keys[0])
 					route := new(Route)
 					if version == "Phone" {
-						conf.ServerPort--
+						conf.ServerPort++
 						conf.SALT = "kcp-go"
 						conf.EBUFLEN = 4096
 					} else {
