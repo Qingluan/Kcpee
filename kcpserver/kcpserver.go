@@ -239,6 +239,7 @@ func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 		}
 		ciph, _ := PickCipher(cipher, key, password)
 		stream = ciph.StreamConn(stream)
+		utils.ColorL("ss", password)
 		host, raw, isUdp, err = utils.GetSSServerRequest(stream)
 	default:
 		host, raw, isUdp, err = utils.GetServerRequest(stream)

@@ -428,7 +428,12 @@ func (kcpBase *KcpBase) WithSession(config *Config, id ...uint16) (session *smux
 		kcpBase.muxes[idx].session = kcpBase.WaitConn(config)
 		kcpBase.muxes[idx].ttl = time.Now().Add(time.Duration(kcpBase.kconfig.AutoExpire) * time.Second)
 	} else {
-		if kcpBase.muxes[idx].session.IsClosed() || (kcpBase.kconfig.AutoExpire > 0 && time.Now().After(kcpBase.muxes[idx].ttl)) {
+		if !strings.HasPrefix(kcpBase.muxes[idx].session.RemoteAddr().String(), config.Server.(string)) {
+			kcpBase.chScavenger <- kcpBase.muxes[idx].session
+			kcpBase.muxes[idx].session = kcpBase.WaitConn(config)
+			kcpBase.muxes[idx].ttl = time.Now().Add(time.Duration(kcpBase.kconfig.AutoExpire) * time.Second)
+		} else if kcpBase.muxes[idx].session.IsClosed() || (kcpBase.kconfig.AutoExpire > 0 && time.Now().After(kcpBase.muxes[idx].ttl)) {
+
 			kcpBase.chScavenger <- kcpBase.muxes[idx].session
 			kcpBase.muxes[idx].session = kcpBase.WaitConn(config)
 			kcpBase.muxes[idx].ttl = time.Now().Add(time.Duration(kcpBase.kconfig.AutoExpire) * time.Second)
