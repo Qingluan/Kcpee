@@ -226,7 +226,12 @@ func (serve *KcpServer) handleStream(rr uint16, stream net.Conn) error {
 
 	switch serve.Plugin {
 	case "ss":
-		password := config.Password
+		var password string
+		if config.SSPassword == "" {
+			password = config.Password
+		} else {
+			password = config.SSPassword
+		}
 		key := []byte{}
 		cipher := config.SSMethod
 		if cipher == "" {
