@@ -58,7 +58,7 @@ func (kcp *KcpBase) HiidenConfig(con net.Conn) {
 
 	for {
 		con.SetReadDeadline(time.Now().Add(time.Duration(60) * time.Second))
-		oper, err := man.Talk(false, "info", "user db", "forward to", "set auth user/pwd", "exit")
+		oper, err := man.Talk(false, "info", "user db", "forward to", "cancel forward", "set auth user/pwd", "exit")
 		if err != nil {
 			return
 		}
@@ -71,8 +71,22 @@ func (kcp *KcpBase) HiidenConfig(con net.Conn) {
 		case "user db":
 			con.SetReadDeadline(time.Now().Add(time.Duration(300) * time.Second))
 			man.Menu()
+		case "cancel forward":
+			ips := []string{}
+			for i := range kcp.RedirectBooks {
+				ips = append(ips, i)
+			}
+			i, err := man.Choose("del which one:", ips...)
+			if err != nil {
+				return
+			}
+			remote.Locker.Lock()
+			delete(kcp.RedirectBooks, i)
+			remote.Locker.Unlock()
+			if kcp.config.OldSSPwd != "" {
+				kcp.config.SSPassword = kcp.config.OldSSPwd
+			}
 		case "forward to":
-
 			con.SetReadDeadline(time.Now().Add(time.Duration(300) * time.Second))
 			kcp.SetRedirectIRC(man, fromIP)
 		case "set auth user/pwd":
@@ -138,6 +152,9 @@ func (kcp *KcpBase) SetRedirectIRC(man *remote.Man, ip string) {
 						conf.ServerPort++
 						conf.SALT = "kcp-go"
 						conf.EBUFLEN = 4096
+						kcp.config.OldSSPwd = kcp.config.SSPassword
+						kcp.config.SSPassword = conf.Password
+
 					} else {
 						conf.SALT = "demo salt"
 						conf.EBUFLEN = 1024

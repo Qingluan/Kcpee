@@ -68,6 +68,7 @@ type Config struct {
 
 	// shadowsocks options
 	SSPassword string `json:"ss_password"`
+	OldSSPwd   string `json:"ss_old"`
 	SSMethod   string `json:"ss_method"`
 	SALT       string `json:"salt"`
 	EBUFLEN    int    `json:"buflen"`
