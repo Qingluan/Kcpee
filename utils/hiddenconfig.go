@@ -58,7 +58,7 @@ func (kcp *KcpBase) HiidenConfig(con net.Conn) {
 
 	for {
 		con.SetReadDeadline(time.Now().Add(time.Duration(60) * time.Second))
-		oper, err := man.Talk(false, "info", "user db", "forward to", "exit")
+		oper, err := man.Talk(false, "info", "user db", "forward to", "set auth user/pwd", "exit")
 		if err != nil {
 			return
 		}
@@ -75,6 +75,13 @@ func (kcp *KcpBase) HiidenConfig(con net.Conn) {
 
 			con.SetReadDeadline(time.Now().Add(time.Duration(300) * time.Second))
 			kcp.SetRedirectIRC(man, fromIP)
+		case "set auth user/pwd":
+			user, err := man.Input("set user name:")
+			pwd, err := man.Input("set pwd name:")
+			if err == nil {
+				remote.MemDB.Kv[user] = pwd
+			}
+			con.Write([]byte("set user and pwd ok!"))
 		case "exit":
 			return
 		}
