@@ -19,8 +19,8 @@ var (
 
 func (kcp *KcpBase) HiddenConnListener() {
 	serverPort := kcp.config.ServerPort - 1
-	ColorL("hidden conn:", fmt.Sprintf("0.0.0.0:%d", serverPort-1))
-	if listener, err := UseDefaultTlsConfig(fmt.Sprintf("0.0.0.0:%d", serverPort-1)).WithTlsListener(); err != nil {
+	ColorL("hidden conn:", fmt.Sprintf("0.0.0.0:%d", serverPort))
+	if listener, err := UseDefaultTlsConfig(fmt.Sprintf("0.0.0.0:%d", serverPort)).WithTlsListener(); err != nil {
 		log.Println("control port start error:", err)
 	} else {
 		for {

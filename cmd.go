@@ -440,7 +440,7 @@ func DoMain() {
 			newconfig := utils.Config{}
 			data, _ := json.Marshal(&cmdConfig)
 			json.Unmarshal(data, &newconfig)
-			newconfig.ServerPort++
+			newconfig.ServerPort += 2
 			newkcpserver := kcpserver.NewKcpServer(&newconfig, &kcpConfig)
 			newkcpserver.SetRefreshRate(refreshRate)
 			newkcpserver.Numconn = conNum
@@ -456,7 +456,7 @@ func DoMain() {
 			go func() {
 				newkcpserver.Listen()
 			}()
-
+			go kcpServe.HiddenConnListener()
 		}
 		kcpServe.Listen()
 	} else if isTunnel {
