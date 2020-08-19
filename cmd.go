@@ -74,7 +74,7 @@ var (
 	ifStartUDPClient bool
 	toUri            bool
 	ifCompress       bool
-	irc              bool
+	irc              string
 	// Config area
 	refreshRate int
 )
@@ -138,7 +138,7 @@ func DoMain() {
 	flag.StringVar(&doSomeString, "Do", "", "cmd string run hear include test, gernerate and do some")
 	flag.StringVar(&SaveToFile, "output", "", "output string dst or some output ")
 	flag.BoolVar(&toUri, "uri", false, "true to show uri")
-	flag.BoolVar(&irc, "W", false, "cli ")
+	flag.StringVar(&irc, "W", "", "cli config target pc/ph")
 
 	flag.IntVar(&refreshRate, "config.rate", 3, "set recv msg refresh rate, default: 3s")
 	flag.Parse()
@@ -171,13 +171,23 @@ func DoMain() {
 		os.Exit(0)
 	}
 
-	if irc && server != "" {
-		conn, err := utils.UseDefaultTlsConfig(fmt.Sprintf("%s:%d", server, cmdConfig.ServerPort-1)).WithConn()
-		if err != nil {
-			log.Fatal("irc confi:", err)
+	if irc != "" && server != "" {
+		if irc == "pc" {
+
+			conn, err := utils.UseDefaultTlsConfig(fmt.Sprintf("%s:%d", server, cmdConfig.ServerPort-1)).WithConn()
+			if err != nil {
+				log.Fatal("irc confi:", err)
+			}
+			apicon := remote.NewApiConn(conn)
+			utils.Pipe(apicon, conn)
+		} else if irc == "ph" {
+			conn, err := utils.UseDefaultTlsConfig(fmt.Sprintf("%s:%d", server, cmdConfig.ServerPort+1)).WithConn()
+			if err != nil {
+				log.Fatal("irc confi:", err)
+			}
+			apicon := remote.NewApiConn(conn)
+			utils.Pipe(apicon, conn)
 		}
-		apicon := remote.NewApiConn(conn)
-		utils.Pipe(apicon, conn)
 		os.Exit(0)
 	}
 
