@@ -126,8 +126,8 @@ func (test *SpeedTest) baseCmd(cmdStr string) (outputdata []byte, err error) {
 		//fmt.Println(" ------ ")
 		d := buffer.Bytes()
 		con.Write(d)
-		buf3 := make([]byte, 10)
-		con.Read(buf3)
+		// buf3 := make([]byte, 10)
+		// con.Read(buf3)
 		// ColorL(buf)
 		buf2 := make([]byte, 2048)
 		for {
@@ -136,10 +136,12 @@ func (test *SpeedTest) baseCmd(cmdStr string) (outputdata []byte, err error) {
 				outputdata = buf2[:n]
 				return
 			} else {
+				fmt.Println(buf2)
 				err = ierr
 			}
 		}
 	} else {
+		ColorL("dial err:", ierr)
 		err = ierr
 	}
 	return
@@ -186,7 +188,7 @@ func (test *SpeedTest) LsConfig() (output map[string]string, err error) {
 	// 	err = ierr
 	// }
 	if buf, ierr := test.baseCmd(ssUri); err == nil {
-		//fmt.Printf("%s", string(buf))
+		// fmt.Printf("%s", string(buf))
 		err = json.Unmarshal(buf, &output)
 	} else {
 		err = ierr

@@ -194,7 +194,7 @@ func DoMain() {
 	if isCmdLs {
 		tester := utils.NewSpeedTest()
 		if d, err := tester.LsConfig(); err != nil {
-			log.Fatal("json:", err)
+			log.Fatal("json client back err:", err)
 		} else {
 			for ip, loc := range d {
 				res := strings.Split(loc, "/")

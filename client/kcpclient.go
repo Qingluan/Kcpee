@@ -375,16 +375,20 @@ func (conn *KcpClient) handleSS(ssuri string, con net.Conn) {
 		// time.Sleep(1 * time.Second)
 		con.Close()
 	}()
+
+	// utils.ColorL("asfs", ssuri)
 	if ssuri == "ss://ls" {
+		// utils.ColorL(ssuri)
 		output := make(map[string]string)
 		for _, b := range utils.BOOK.Books() {
 			output[b.Server.(string)] = b.LocalAddress
 		}
+		// utils.ColorD(output)
 		if d, err := json.Marshal(output); err == nil {
 			// utils.ColorL(d)
 			//fmt.Println(string(d))
 			if _, err := con.Write(d); err != nil {
-				// utils.ColorL("Err", err)
+				utils.ColorL("json back Err:", err)
 			}
 		}
 	} else if ssuri == "ss://route" {
