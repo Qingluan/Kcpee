@@ -453,7 +453,7 @@ func (kconfig *KcpConfig) UpdateMode() {
 	case "fast4":
 		kconfig.NoDelay, kconfig.Interval, kconfig.Resend, kconfig.NoCongestion = 1, 5, 2, 1
 	}
-	ColorL("kcp mode", kconfig.Mode)
+	// ColorL("kcp mode", kconfig.Mode)
 }
 
 func (kconfig *KcpConfig) GenerateConfig() *smux.Config {

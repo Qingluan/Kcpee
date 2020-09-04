@@ -229,7 +229,7 @@ func (test *SpeedTest) LsRoute() (out string, err error) {
 		con.Read(buf)
 		d := buffer.Bytes()
 		con.Write(d)
-		con.Read(buf)
+		// con.Read(buf)
 		// ColorL(buf)
 		buf2 := make([]byte, 4096)
 		for {
@@ -577,6 +577,51 @@ func (test *SpeedTest) GetHistoryUrls() (history []string, err error) {
 	return
 }
 
+func (test *SpeedTest) _test(addr string) (usedTime time.Duration, err error) {
+	var dialer proxy.Dialer
+	st := time.Now()
+	dialer, err = proxy.SOCKS5("tcp", addr, nil, proxy.Direct)
+	httpTransport := &http.Transport{}
+	httpTransport.Dial = dialer.Dial
+	if err != nil {
+		// fmt.Println("1")
+		log.Println("create socks5 error:", err)
+		return time.Duration(-1) * time.Second, err
+	}
+	httpClient := &http.Client{Transport: httpTransport, Timeout: 12 * time.Second}
+	req, err := http.NewRequest("GET", "https://www.google.com", nil)
+
+	if err != nil && !strings.Contains(err.Error(), "EOF") {
+		// fmt.Println("1")
+
+		log.Println("new req error:", err)
+		return time.Duration(-1) * time.Second, err
+	}
+	resp, err := httpClient.Do(req)
+	if err != nil && !strings.Contains(err.Error(), "EOF") {
+		// fmt.Println("2")
+
+		// log.Println("send socks5 error:", err)
+		return time.Duration(-1) * time.Second, err
+	}
+	if resp == nil {
+
+		log.Println("eof error:", err)
+		return time.Duration(-1) * time.Second, err
+	}
+	if resp.StatusCode/200 == 1 {
+		err = nil
+		return time.Now().Sub(st), err
+	} else {
+		// fmt.Println("3")
+
+		log.Println("fuck error:", err)
+		out, _ := ioutil.ReadAll(resp.Body)
+		return time.Now().Sub(st), errors.New(string(out) + ":code:" + resp.Status)
+	}
+
+}
+
 func (test *SpeedTest) testUrl(reqUrl, host string, wg *sync.WaitGroup) {
 	var speed float32
 
@@ -596,7 +641,7 @@ func (test *SpeedTest) testUrl(reqUrl, host string, wg *sync.WaitGroup) {
 			fmt.Fprintln(os.Stderr, "can't connect to the proxy:", err)
 			break
 		}
-		if req, err := http.NewRequest("HEAD", reqUrl, nil); err == nil {
+		if req, err := http.NewRequest("GET", reqUrl, nil); err == nil {
 
 			if resp, err := httpClient.Do(req); err == nil {
 				if _, err := ioutil.ReadAll(resp.Body); err == nil {
@@ -628,6 +673,73 @@ func (test *SpeedTest) testUrl(reqUrl, host string, wg *sync.WaitGroup) {
 	// ColorL(url, c.used)
 	test.message <- c
 
+}
+
+func (test *SpeedTest) TestAllConfigs(howTest func(proaxyaddr string, config Config)) {
+	// s, err := test.LsRoute()
+	// if err != nil {
+	// 	log.Fatal("ls route error:", err)
+	// }
+	// out := make(map[string]Config)
+	// err = json.Unmarshal([]byte(s), &out)
+	// if err != nil {
+	// 	log.Fatal("ls route error json unmarshal:", err)
+	// }
+	var wait sync.WaitGroup
+	num := 0
+	for _, c := range BOOK.books {
+		go func(paddr string, conf Config) {
+			defer wait.Done()
+			howTest(paddr, conf)
+		}(fmt.Sprintf("localhost:%d", 30303+num), c)
+		wait.Add(1)
+		num++
+	}
+	wait.Wait()
+
+}
+
+func (test *SpeedTest) TestOneConfig(config *Config, addr string) {
+	// test.SetConfig(config)
+	count := 7
+	type S struct {
+		t    time.Duration
+		addr string
+		err  error
+	}
+	ones := make(chan S, count)
+
+	for i := 0; i < count; i++ {
+		go func() {
+			out, err := test._test(addr)
+			ones <- S{
+				t:    out,
+				addr: addr,
+				err:  err,
+			}
+		}()
+	}
+	var all int64
+	for i := 0; i < count; i++ {
+		out := <-ones
+		if out.err != nil {
+			count--
+		}
+		all += out.t.Nanoseconds()
+	}
+	if count > 0 {
+		ColorL(config.Server.(string), "avt:", time.Duration(all/int64(count)), "loss:", 7-count)
+	} else {
+		ColorL(config.Server.(string), "X")
+	}
+	// if err != nil && !strings.Contains(err.Error(), "EOF") {
+	// 	ColorL(config.Server.(string), "err:", err)
+
+	// } else {
+	// 	ColorL(config.Server.(string), out)
+
+	// }
+	return
 }
 
 func TestURLUsedTime(requrl, host string) ConfigSpeed {

@@ -39,6 +39,7 @@ type KcpClient struct {
 	listenAddr      string
 	clientProxyType int
 	RRR             uint16
+	ShowLog         int
 }
 
 type waitTest struct {
@@ -67,7 +68,9 @@ func (conn *KcpClient) Listen(listenAddr string, ifStartUdpListener ...bool) (er
 		go conn.ListenUDP(listenAddr)
 	}
 	ln, err := net.Listen("tcp", listenAddr)
-	utils.ColorL("Local Listen:", listenAddr)
+	if conn.ShowLog < 2 {
+		utils.ColorL("Local Listen:", listenAddr)
+	}
 	conn.listenAddr = listenAddr
 	if err != nil {
 		log.Fatal("listen error:", err)
@@ -80,7 +83,9 @@ func (conn *KcpClient) Listen(listenAddr string, ifStartUdpListener ...bool) (er
 	if conn.Role == "client" {
 		go utils.SpeedShow()
 	}
-	conn.ShowConfig()
+	if conn.ShowLog < 1 {
+		conn.ShowConfig()
+	}
 
 	for {
 		if TO_STOP {
@@ -266,7 +271,9 @@ func (kclient *KcpClient) handleBody(p1 net.Conn, host string, raw []byte) {
 	rr := kclient.RRR
 	if strings.HasPrefix(host, "ss://") {
 		if kclient.listenAddr != utils.TestProxyAddr {
-			utils.ColorL("set new :", host)
+			if kclient.ShowLog < 1 {
+				utils.ColorL("set new :", host)
+			}
 		}
 		kclient.handleSS(host, p1)
 		return
@@ -278,7 +285,10 @@ func (kclient *KcpClient) handleBody(p1 net.Conn, host string, raw []byte) {
 	config := kclient.GetConfig()
 
 	if kclient.routeMode == AUTO_MODE {
-		utils.ColorL(config.Method, "mode:", "Auto", host)
+		if kclient.ShowLog < 2 {
+			utils.ColorL(config.Method, "mode:", "Auto", host)
+
+		}
 		if kclient.useAutoMap && kclient.listenAddr != utils.TestProxyAddr {
 			// utils.ColorL("try use", host, fmt.Sprintf("(%s)", utils.GetMainDomain(host)))
 			if v, ok := utils.AutoMap[utils.GetMainDomain(host)]; ok {
@@ -292,16 +302,22 @@ func (kclient *KcpClient) handleBody(p1 net.Conn, host string, raw []byte) {
 			}
 		}
 	} else if kclient.routeMode == FLOW_MODE {
+		if kclient.ShowLog < 1 {
+			utils.ColorL(config.Method, "mode:", "Flow", host)
 
-		utils.ColorL(config.Method, "mode:", "Flow", host)
+		}
 		config = utils.BOOK.FlowGet()
 	} else if kclient.routeMode == SINGLE_MODE {
+		if kclient.ShowLog < 1 {
 
-		utils.ColorL(config.Method, "mode:", "Single", host)
+			utils.ColorL(config.Method, "mode:", "Single", host)
+		}
 		config = kclient.GetConfig()
 	} else {
+		if kclient.ShowLog < 1 {
 
-		utils.ColorL(config.Method, "mode:", "Default", host)
+			utils.ColorL(config.Method, "mode:", "Default", host)
+		}
 		config = kclient.GetConfig()
 	}
 	if config == nil {
@@ -392,7 +408,12 @@ func (conn *KcpClient) handleSS(ssuri string, con net.Conn) {
 			}
 		}
 	} else if ssuri == "ss://route" {
-		if d, err := json.Marshal(utils.AutoMap); err == nil {
+		output := make(map[string]utils.Config)
+		for _, b := range utils.BOOK.Books() {
+			b.ServerPassword = ""
+			output[b.Server.(string)] = b
+		}
+		if d, err := json.Marshal(output); err == nil {
 			if _, err := con.Write(d); err != nil {
 				utils.ColorL("ss://route| Err", err)
 			}

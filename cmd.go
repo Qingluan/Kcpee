@@ -64,6 +64,7 @@ var (
 	isToUri          bool
 	isCmdAutoRoute   bool
 	isCmdFlowRoute   bool
+	isTestAuthRoute  bool
 	isAuthEdit       bool
 	configToUrl      bool
 	isCmdSingleRoute string
@@ -139,7 +140,7 @@ func DoMain() {
 	flag.StringVar(&SaveToFile, "output", "", "output string dst or some output ")
 	flag.BoolVar(&toUri, "uri", false, "true to show uri")
 	flag.StringVar(&irc, "W", "", "cli config target pc/ph")
-
+	flag.BoolVar(&isTestAuthRoute, "alive", false, "test all route alive")
 	flag.IntVar(&refreshRate, "config.rate", 3, "set recv msg refresh rate, default: 3s")
 	flag.Parse()
 
@@ -485,6 +486,20 @@ func DoMain() {
 		conn.SetTunMode("map")
 		conn.Connect(localAddress, tunnelTo)
 	} else {
+		if isTestAuthRoute && isCredient {
+			tester := utils.NewSpeedTest()
+			fmt.Println("\n---------------------------- sep ----------------------")
+			tester.TestAllConfigs(func(proxyAddr string, config utils.Config) {
+				cli := client.NewKcpClient(&config, &kcpConfig)
+				cli.IfCompress = ifCompress
+				cli.ShowLog = 3
+				go cli.Listen(proxyAddr, false)
+				time.Sleep(3 * time.Second)
+				test := utils.NewSpeedTest()
+				test.TestOneConfig(&config, proxyAddr)
+			})
+			os.Exit(0)
+		}
 		if isCredient || configFile != "" || server != "" {
 			g.Println("run client mode")
 			if runtime.GOOS == "darwin" {
