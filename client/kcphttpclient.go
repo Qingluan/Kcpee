@@ -44,10 +44,16 @@ func (kclient *KcpClient) ListenHttpProxy(listenAddr string) (err error) {
 		// Avoid:              ,
 		HandleBody: func(p1 net.Conn, host string, afterConnected func(p1, p2 net.Conn)) {
 			kclient.handleBodyDo(p1, host, func(p2 net.Conn, p1 net.Conn, raw []byte) {
-
 				if _, err := p2.Write(raw); err != nil {
 					log.Fatal("no host/addr")
 					return
+				} else {
+					buf := make([]byte, 10)
+					_, err = p2.Read(buf)
+					if err != nil {
+
+						p1.Close()
+					}
 				}
 				afterConnected(p1, p2)
 				kclient.Pipe(p1, p2)

@@ -43,11 +43,12 @@ const (
 )
 
 var (
-	debug       utils.DebugLog
-	sanitizeIps bool
-	udp         bool
-	managerAddr string
-	smuxConfig  = smux.DefaultConfig()
+	debug                 utils.DebugLog
+	sanitizeIps           bool
+	udp                   bool
+	managerAddr           string
+	smuxConfig            = smux.DefaultConfig()
+	Socks5ConnectedRemote = []byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x08, 0x43}
 )
 
 type Channel struct {
@@ -636,7 +637,7 @@ func (serve *KcpServer) handleRemote(conn net.Conn, host string) {
 	case "ss":
 		utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "handleRemote", host, "Shadowsocks", "ok")
 	default:
-		_, err = conn.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x08, 0x43})
+		_, err = conn.Write(Socks5ConnectedRemote)
 		if err != nil {
 			utils.ColorL(fmt.Sprintf("%d/%d", num, serve.AcceptConn), "Err", err)
 		}

@@ -71,11 +71,13 @@ func HostToRaw(host string, port int) (raw []byte) {
 		host = tmp[0]
 		port, _ = strconv.Atoi(tmp[1])
 	}
-	raw = append(raw, 0x03, byte(len(host)))
+	raw = append(raw, 0x5, 0x1, 0x0, 0x03, byte(len(host)))
+	// raw = append(raw, 0x03, byte(len(host)))
 	raw = append(raw, []byte(host)...)
 	bb := make([]byte, 2)
 	binary.BigEndian.PutUint16(bb, uint16(port))
 	raw = append(raw, bb...)
+	// fmt.Println("port:", port, "raw:", raw)
 	return
 }
 
