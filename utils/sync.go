@@ -22,7 +22,7 @@ import (
 func DownloadFile(filepath string, url string) error {
 	// Get the data
 	startAt := time.Now()
-	defer ColorL("Download config used:", time.Now().Sub(startAt))
+	defer ColorL("Download config "+url+" used:", time.Now().Sub(startAt))
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
