@@ -9,7 +9,10 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/martinlindhe/notify"
+
 	"github.com/gen2brain/dlgs"
+	"github.com/getlantern/systray"
 )
 
 func testIfStart() bool {
@@ -104,4 +107,47 @@ func RunGui(global func()) {
 		// time.Sleep(5 * time.Second)
 	}
 	return
+}
+
+func OnReady(global func()) {
+	systray.SetIcon(IconData)
+	systray.SetTitle("Kcpee ")
+	// systray.SetTooltip("点击切换线路")
+	switchg := systray.AddMenuItem("Routes", "switch route")
+	setGlobal := systray.AddMenuItem("Global Mode", "set global mode")
+
+	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
+
+	// Sets the icon of a menu item. Only available on Mac and Windows.
+	mQuit.SetIcon(IconData)
+	for {
+		select {
+		case <-switchg.ClickedCh:
+			// items := []string{"Global Mode", "Stop Kcp", "Auto Mode", "Flow Mode"}
+			items := []string{}
+			items_2 := strings.Split(execs("Kcpee -book.ls", false), "\n")
+			items = append(items, items_2...)
+
+			item, _, err := dlgs.List("Kcpee", "Select route:", items)
+			execs("Kcpee -book.single "+strings.SplitN(item, " ", 2)[0], false)
+			if err != nil {
+				panic(err)
+				notify.Alert("Kcpee", "Error info", err.Error(), "")
+			}
+			// if !s {
+			// 	os.Exit(0)
+			// }
+		case <-setGlobal.ClickedCh:
+			global()
+		case <-mQuit.ClickedCh:
+			execs("Kcpee -book.stop ", false)
+		}
+
+	}
+}
+
+func OnExit() {
+	// clean up here
+
+	notify.Notify("Kcpee", "exit kcpee", "this app exit!!", "")
 }

@@ -13,7 +13,7 @@ import (
 
 	"github.com/Qingluan/Kcpee/utils"
 	"github.com/fatih/color"
-
+	"github.com/martinlindhe/notify"
 	"github.com/xtaci/smux"
 	// "github.com/cs8425/smux"
 )
@@ -70,6 +70,8 @@ func (conn *KcpClient) Listen(listenAddr string, ifStartUdpListener ...bool) (er
 	ln, err := net.Listen("tcp", listenAddr)
 	if conn.ShowLog < 2 {
 		utils.ColorL("Local Listen:", listenAddr)
+		notify.Notify("Kcpee", "Start", listenAddr, "")
+
 	}
 	conn.listenAddr = listenAddr
 	if err != nil {
@@ -436,6 +438,7 @@ func (conn *KcpClient) handleSS(ssuri string, con net.Conn) {
 		if usedRouteIP := strings.Replace(ssuri, "ss://use", "", 1); len(usedRouteIP) > 0 {
 			if config := utils.BOOK.Get(usedRouteIP); config != nil {
 				utils.ColorL("Single Mode Use:", config.Server.(string), "pwd:", config.Password, " Port:", config.ServerPort)
+				notify.Notify("Kcpee", "Set Route", fmt.Sprint(config.Server.(string), "pwd:", config.Password, " Port:", config.ServerPort), "")
 				conn.SetMode(SINGLE_MODE)
 				conn.SetConfig(config)
 				con.Write([]byte("Single Mode Use:" + config.Server.(string)))

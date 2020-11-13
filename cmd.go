@@ -23,6 +23,7 @@ import (
 	"github.com/Qingluan/Kcpee/kcpserver"
 	"github.com/Qingluan/Kcpee/utils"
 	"github.com/fatih/color"
+	"github.com/getlantern/systray"
 	// "./client"
 )
 
@@ -529,6 +530,18 @@ func DoMain() {
 					conn.ListenHttpProxy("")
 				}()
 			}
+			go func() {
+				onready := func() {
+					utils.OnReady(func() {
+						if client.IfProxyStart() {
+							client.ProxySet("")
+						} else {
+							client.ProxySet("http://localhost:10091")
+						}
+					})
+				}
+				systray.Run(onready, utils.OnExit)
+			}()
 			conn.Listen(localAddress, ifStartUDPClient)
 		} else {
 			utils.RunGui(func() {
