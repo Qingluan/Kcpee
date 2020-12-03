@@ -1,0 +1,12 @@
+[Desktop Entry]
+Categories=System;
+Comment=Use Proxy Client.
+Exec=/home/user/Documents/Go/bin/Kcpee
+GenericName=Kcpee
+Icon=/home/user/Documents/Go/Imgs/Kcpee.png
+Name=Kcpee
+OnlyShowIn=Deepin;
+Terminal=false
+Type=Application
+X-AppStream-Ignore=true
+X-Deepin-Vendor=user-custom

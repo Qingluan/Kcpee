@@ -12,6 +12,7 @@ require (
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
 	github.com/klauspost/reedsolomon v1.9.9 // indirect
 	github.com/martinlindhe/notify v0.0.0-20181008203735-20632c9a275a
+	github.com/ncruces/zenity v0.4.2 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3
