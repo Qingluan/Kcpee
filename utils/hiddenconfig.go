@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"gitee.com/dark.H/go-remote-repl/remote"
+	"gitee.com/dark.H/go-remote-repl/datas"
 )
 
 var (
@@ -35,13 +36,13 @@ func (kcp *KcpBase) HiddenConnListener() {
 }
 
 func (kcp *KcpBase) HiidenConfig(con net.Conn) {
-	man := remote.ManWraper(con)
+	man := remote.NewApiServer(con)
 	defer con.Close()
 
 	con.SetReadDeadline(time.Now().Add(time.Duration(60) * time.Second))
 	fromIP := strings.SplitN(con.RemoteAddr().String(), ":", 2)[0]
 	user, _ := man.Talk(true, "user")
-	if len(remote.MemDB.Kv) == 0 {
+	if len(datas.MemDB.Kv) == 0 {
 		if user == "user" {
 			con.SetReadDeadline(time.Now().Add(time.Duration(60) * time.Second))
 			if pwd, _ := man.Talk(true, "pwd"); pwd != "pwd" {
@@ -49,7 +50,7 @@ func (kcp *KcpBase) HiidenConfig(con net.Conn) {
 			}
 		}
 	} else {
-		pwdS := remote.MemDB.Kv[user]
+		pwdS := datas.MemDB.Kv[user]
 		con.SetReadDeadline(time.Now().Add(time.Duration(60) * time.Second))
 		if pwd, _ := man.Talk(true, "pwd"); pwd != pwdS {
 			return
@@ -70,7 +71,7 @@ func (kcp *KcpBase) HiidenConfig(con net.Conn) {
 			con.Write(data)
 		case "user db":
 			con.SetReadDeadline(time.Now().Add(time.Duration(300) * time.Second))
-			man.Menu()
+			man.DbCli()
 		case "cancel forward":
 			ips := []string{}
 			for i := range kcp.RedirectBooks {
@@ -80,9 +81,9 @@ func (kcp *KcpBase) HiidenConfig(con net.Conn) {
 			if err != nil {
 				return
 			}
-			remote.Locker.Lock()
+			datas.Locker.Lock()
 			delete(kcp.RedirectBooks, i)
-			remote.Locker.Unlock()
+			datas.Locker.Unlock()
 			if kcp.config.OldSSPwd != "" {
 				kcp.config.SSPassword = kcp.config.OldSSPwd
 			}
@@ -93,7 +94,7 @@ func (kcp *KcpBase) HiidenConfig(con net.Conn) {
 			user, err := man.Input("set user name:")
 			pwd, err := man.Input("set pwd name:")
 			if err == nil {
-				remote.MemDB.Kv[user] = pwd
+				datas.MemDB.Kv[user] = pwd
 			}
 			con.Write([]byte("set user and pwd ok!"))
 		case "exit":
@@ -102,7 +103,7 @@ func (kcp *KcpBase) HiidenConfig(con net.Conn) {
 	}
 }
 
-func (kcp *KcpBase) SetRedirectIRC(man *remote.Man, ip string) {
+func (kcp *KcpBase) SetRedirectIRC(man *remote.ApiServerMan, ip string) {
 	authName, err := man.Talk(true, "username")
 	if err != nil {
 		log.Println("talk error:", err)
@@ -163,7 +164,7 @@ func (kcp *KcpBase) SetRedirectIRC(man *remote.Man, ip string) {
 					route.SetExireTime(t)
 					route.SetConfig(conf)
 					chooseIps := []string{}
-					for ip := range remote.MemDB.Kd["ip who use"] {
+					for ip := range datas.MemDB.Kd["ip who use"] {
 						chooseIps = append(chooseIps, ip)
 					}
 					ip, err := man.Choose("choose which ip use forward:", chooseIps...)

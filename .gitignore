@@ -9,7 +9,7 @@ bin/*
 Kcpee
 SignKeys/
 
-Kcpee
+Kcpee*
 *.json
 # Test binary, built with `go test -c`
 *.syso

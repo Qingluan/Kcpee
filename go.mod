@@ -3,7 +3,7 @@ module github.com/Qingluan/Kcpee
 go 1.14
 
 require (
-	gitee.com/dark.H/go-remote-repl v0.0.0-20200817093001-da9166510080
+	gitee.com/dark.H/go-remote-repl v1.1.6
 	github.com/fatih/color v1.9.0
 	github.com/gen2brain/dlgs v0.0.0-20200211102745-b9c2664df42f
 	github.com/getlantern/systray v1.0.5
@@ -21,7 +21,7 @@ require (
 	github.com/xtaci/kcp-go v5.4.20+incompatible
 	github.com/xtaci/smux v1.5.14
 	go.uber.org/zap v1.15.0
-	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
+	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	golang.org/x/net v0.0.0-20200813134508-3edf25e44fcc
 	golang.org/x/text v0.3.3
 	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2 // indirect
