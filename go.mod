@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	gitee.com/dark.H/go-remote-repl v1.1.6
+	github.com/deckarep/gosx-notifier v0.0.0-20180201035817-e127226297fb // indirect
 	github.com/fatih/color v1.9.0
 	github.com/gen2brain/dlgs v0.0.0-20200211102745-b9c2664df42f
 	github.com/getlantern/systray v1.0.5

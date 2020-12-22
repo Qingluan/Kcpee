@@ -17,6 +17,14 @@ import (
 	"github.com/howeyc/gopass"
 )
 
+var (
+	Tmp    = os.TempDir()
+	dst    = filepath.Join(Tmp, "tmp.list")
+	cdst   = filepath.Join(Tmp, "config.en")
+	cdst_z = filepath.Join(Tmp, "config.temp.en.zip")
+	cdst_k = filepath.Join(Tmp, "Kcpconfig")
+)
+
 // DownloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory.
 func DownloadFile(filepath string, url string) error {
@@ -169,7 +177,7 @@ func Unzip(src string, dest string) ([]string, error) {
 func Credient(username, password string) (routeDir string, err error) {
 	startAt := time.Now()
 	defer ColorL("load config from Network used:", time.Now().Sub(startAt))
-	if !PathExists("config.en") {
+	if !PathExists(cdst) {
 		if username == "" {
 			reader := bufio.NewReader(os.Stdin)
 			fmt.Print("Enter Username(git_username/gitproject_name): ")
@@ -209,7 +217,7 @@ func Credient(username, password string) (routeDir string, err error) {
 		}
 		username = strings.Join(us, "/")
 	}
-	if !PathExists("config.en") {
+	if !PathExists(cdst) {
 		pts := strings.SplitN(username, ":", 2)
 		username = pts[0]
 		choiceConfigKey := "default"
@@ -233,11 +241,11 @@ func Credient(username, password string) (routeDir string, err error) {
 			}
 		}
 		indexURL := baseURL + "list"
-		if err = DownloadFile("tmp.list", indexURL); err != nil {
+		if err = DownloadFile(dst, indexURL); err != nil {
 			return
 		}
-		defer os.Remove("tmp.list")
-		if db, ierr := os.Open("tmp.list"); ierr == nil {
+		defer os.Remove(dst)
+		if db, ierr := os.Open(dst); ierr == nil {
 			defer db.Close()
 
 			if d, ierr := ioutil.ReadAll(db); ierr == nil {
@@ -246,7 +254,7 @@ func Credient(username, password string) (routeDir string, err error) {
 					if v, ok := mapJSON[choiceConfigKey]; ok {
 						url := baseURL + v
 						ColorL("sync from :", url)
-						if err = DownloadFile("config.en", url); err != nil {
+						if err = DownloadFile(cdst, url); err != nil {
 							log.Println("err sync:", err)
 							return
 						}
@@ -260,16 +268,16 @@ func Credient(username, password string) (routeDir string, err error) {
 
 	}
 
-	if fb, err := os.Open("config.en"); err == nil {
-		defer os.Remove("config.en")
+	if fb, err := os.Open(cdst); err == nil {
+		defer os.Remove(cdst)
 		defer fb.Close()
 		if datas, err := ioutil.ReadAll(fb); err == nil {
 			deData := make([]byte, len(datas))
 			en.Decrypt(deData, datas)
-			if err = ioutil.WriteFile("config.temp.en.zip", deData, 0644); err == nil {
-				defer os.Remove("config.temp.en.zip")
-				if _, err := Unzip("config.temp.en.zip", "Kcpconfig"); err == nil {
-					routeDir = "Kcpconfig"
+			if err = ioutil.WriteFile(cdst_z, deData, 0644); err == nil {
+				defer os.Remove(cdst_z)
+				if _, err := Unzip(cdst_z, cdst_k); err == nil {
+					routeDir = cdst_k
 				} else {
 					log.Println("unzip error:", err)
 				}
