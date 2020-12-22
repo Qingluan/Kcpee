@@ -530,7 +530,7 @@ func DoMain() {
 					conn.ListenHttpProxy("")
 				}()
 			}
-			go func() {
+			//go func() {
 				onready := func() {
 					utils.OnReady(func() {
 						if client.IfProxyStart() {
@@ -540,9 +540,9 @@ func DoMain() {
 						}
 					})
 				}
-				systray.Run(onready, utils.OnExit)
-			}()
-			conn.Listen(localAddress, ifStartUDPClient)
+			//}()
+			go conn.Listen(localAddress, ifStartUDPClient)
+			systray.Run(onready, utils.OnExit)
 		} else {
 			utils.RunGui(func() {
 				if client.IfProxyStart() {

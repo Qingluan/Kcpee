@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/martinlindhe/notify"
+	"github.com/Qingluan/Kcpee/icon"
 
 	"github.com/gen2brain/dlgs"
 	"github.com/getlantern/systray"
@@ -110,7 +111,7 @@ func RunGui(global func()) {
 }
 
 func OnReady(global func()) {
-	systray.SetIcon(IconData)
+	systray.SetIcon(icon.Data)
 	systray.SetTitle("Kcpee ")
 	// systray.SetTooltip("点击切换线路")
 	switchg := systray.AddMenuItem("Routes", "switch route")
@@ -119,7 +120,7 @@ func OnReady(global func()) {
 	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
 
 	// Sets the icon of a menu item. Only available on Mac and Windows.
-	mQuit.SetIcon(IconData)
+	mQuit.SetIcon(icon.Data)
 	for {
 		select {
 		case <-switchg.ClickedCh:
