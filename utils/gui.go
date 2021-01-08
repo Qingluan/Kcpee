@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/martinlindhe/notify"
 	"github.com/Qingluan/Kcpee/icon"
+	"github.com/martinlindhe/notify"
 
 	"github.com/gen2brain/dlgs"
 	"github.com/getlantern/systray"
@@ -142,6 +142,7 @@ func OnReady(global func()) {
 			global()
 		case <-mQuit.ClickedCh:
 			execs("Kcpee -book.stop ", false)
+			execs("ps aux | grep Kcpee | grep -v grep |` awk '{ print $2} '| xargs kill -9", false)
 		}
 
 	}
