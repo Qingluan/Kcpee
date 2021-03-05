@@ -121,8 +121,13 @@ func zipit(source, target string) error {
 // Unzip will decompress a zip archive, moving all files and folders
 // within the zip file (parameter 1) to an output directory (parameter 2).
 func Unzip(src string, dest string) ([]string, error) {
+	if _, err := os.Stat(dest); err == nil {
+		os.RemoveAll(dest)
+		ColorL("clean old:", dest)
+	}
 	startAt := time.Now()
-	defer ColorL("parse config used:", time.Now().Sub(startAt))
+	defer ColorL("parse config used:", time.Now().Sub(startAt), "=>", dest)
+	// defer os.RemoveAll(dest)
 	var filenames []string
 
 	r, err := zip.OpenReader(src)
@@ -300,7 +305,7 @@ func Credient(username, password string) (routeDir string, err error) {
 
 func Sync(configRoot string) (file string, err error) {
 	startAt := time.Now()
-	defer ColorL("gen config.en:", time.Now().Sub(startAt))
+	defer ColorL("gen config.en:", time.Now().Sub(startAt), configRoot)
 	// var files []string
 	fmt.Println("Enter Password: ")
 	passwd, err := gopass.GetPasswd()
@@ -326,6 +331,7 @@ func Sync(configRoot string) (file string, err error) {
 	// if PathExists(route) {
 	// 	files = append(files, route)
 	// }
+
 	if err := zipit(configRoot, "Kcpconfig.zip"); err == nil {
 		defer os.Remove("Kcpconfig.zip")
 		if fb, err := os.Open("Kcpconfig.zip"); err == nil {
