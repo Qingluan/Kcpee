@@ -29,6 +29,9 @@ var (
 // write as it downloads and not load the whole file into memory.
 func DownloadFile(filepath string, url string) error {
 	// Get the data
+	if _, err := os.Stat(filepath); err == nil {
+		os.Remove(filepath)
+	}
 	startAt := time.Now()
 	defer ColorL("Download config "+url+" used:", time.Now().Sub(startAt))
 	resp, err := http.Get(url)
@@ -52,6 +55,9 @@ func DownloadFile(filepath string, url string) error {
 // Param 2: files is a list of files to add to the zip.
 
 func zipit(source, target string) error {
+	if _, err := os.Stat(target); err == nil {
+		os.Remove(target)
+	}
 	zipfile, err := os.Create(target)
 	if err != nil {
 		return err
