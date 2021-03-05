@@ -33,7 +33,7 @@ func DownloadFile(filepath string, url string) error {
 		os.Remove(filepath)
 	}
 	startAt := time.Now()
-	defer ColorL("Download config "+url+" used:", time.Now().Sub(startAt))
+	defer ColorL("Download config "+url+" used:", time.Now().Sub(startAt), "=>", filepath)
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
