@@ -329,10 +329,17 @@ func (kclient *KcpClient) handleBody(p1 net.Conn, host string, raw []byte) {
 	if config.Method != "tls" {
 
 		// utils.ColorL("Stream", "....")
-		session := kclient.WithSession(config, rr)
-		// utils.ColorL("Raw:", raw)
+		for {
+			session := kclient.WithSession(config, rr)
+			// utils.ColorL("Raw:", raw)
+			if session == nil {
+				log.Println("no session , wait again!")
+				continue
+			}
+			kclient.handleClient(session, p1, false, raw)
+			break
+		}
 
-		kclient.handleClient(session, p1, false, raw)
 	} else {
 		tconfig, err := config.ToTlsConfig()
 
