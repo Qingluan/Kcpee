@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Qingluan/Kcpee/utils"
+	"github.com/Qingluan/dnsproxy"
 	"github.com/fatih/color"
 	"github.com/martinlindhe/notify"
 	"github.com/xtaci/smux"
@@ -448,8 +449,9 @@ func (conn *KcpClient) handleSS(ssuri string, con net.Conn) {
 			if config := utils.BOOK.Get(usedRouteIP); config != nil {
 				utils.ColorL("Single Mode Use:", config.Server.(string), "pwd:", config.Password, " Port:", config.ServerPort)
 				utils.ColorL("Change DNS Server :", config.Server.(string))
-				conn.CmdChan <- config.Server.(string) + ":60053"
 
+				conn.CmdChan <- config.Server.(string) + ":60053"
+				dnsproxy.CleanCache()
 				notify.Notify("Kcpee", "Set Route", fmt.Sprint(config.Server.(string), "pwd:", config.Password, " Port:", config.ServerPort), "")
 				conn.SetMode(SINGLE_MODE)
 				conn.SetConfig(config)

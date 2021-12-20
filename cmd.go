@@ -262,6 +262,7 @@ func DoMain() {
 		if configFile, err = utils.Credient(authName, authPasswd); err != nil {
 			log.Fatal(err)
 		}
+		isStartDNS = true
 	}
 
 	localAddress := fmt.Sprintf("%s:%d", cmdConfig.LocalAddress, cmdConfig.LocalPort)
@@ -528,6 +529,9 @@ func DoMain() {
 				// g.Println("Start DNS Server : ", dnsPort)
 
 				dst := fmt.Sprintf("%s:%d", server, dnsPort)
+				if server == "" {
+					dst = fmt.Sprintf("%s:%d", conn.GetConfig().Server.(string), dnsPort)
+				}
 				g.Println("Start DNS Client Server : ", dst)
 				go func() {
 					dnsproxy.NewDNSClientServer(53, dst, conn.CmdChan, nil)
