@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	gitee.com/dark.H/go-remote-repl v1.1.6
-	github.com/Qingluan/dnsproxy v0.0.0-20211220072359-ed2d7a01623b
+	github.com/Qingluan/dnsproxy v0.0.0-20211220082108-c84795a891d6
 	github.com/deckarep/gosx-notifier v0.0.0-20180201035817-e127226297fb // indirect
 	github.com/fatih/color v1.9.0
 	github.com/gen2brain/dlgs v0.0.0-20200211102745-b9c2664df42f

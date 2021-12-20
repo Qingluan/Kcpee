@@ -40,6 +40,7 @@ type KcpClient struct {
 	clientProxyType int
 	RRR             uint16
 	ShowLog         int
+	CmdChan         chan string
 }
 
 type waitTest struct {
@@ -54,6 +55,7 @@ func NewKcpClient(config *utils.Config, kconfig *utils.KcpConfig) (kclient *KcpC
 	kclient.SetConfig(config)
 	kclient.SetMode(AUTO_MODE)
 	kclient.SetKcpConfig(kconfig)
+	kclient.CmdChan = make(chan string, 3)
 	return
 }
 
@@ -445,6 +447,9 @@ func (conn *KcpClient) handleSS(ssuri string, con net.Conn) {
 		if usedRouteIP := strings.Replace(ssuri, "ss://use", "", 1); len(usedRouteIP) > 0 {
 			if config := utils.BOOK.Get(usedRouteIP); config != nil {
 				utils.ColorL("Single Mode Use:", config.Server.(string), "pwd:", config.Password, " Port:", config.ServerPort)
+				utils.ColorL("Change DNS Server :", config.Server.(string))
+				conn.CmdChan <- config.Server.(string) + ":60053"
+
 				notify.Notify("Kcpee", "Set Route", fmt.Sprint(config.Server.(string), "pwd:", config.Password, " Port:", config.ServerPort), "")
 				conn.SetMode(SINGLE_MODE)
 				conn.SetConfig(config)

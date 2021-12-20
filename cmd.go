@@ -520,6 +520,9 @@ func DoMain() {
 				cmd := exec.Command("ulimit", "-n", "4096")
 				cmd.Run()
 			}
+			var conn = client.NewKcpClient(&cmdConfig, &kcpConfig)
+			conn.IfCompress = ifCompress
+
 			if isStartDNS {
 				time.Sleep(2 * time.Second)
 				// g.Println("Start DNS Server : ", dnsPort)
@@ -527,12 +530,9 @@ func DoMain() {
 				dst := fmt.Sprintf("%s:%d", server, dnsPort)
 				g.Println("Start DNS Client Server : ", dst)
 				go func() {
-					dnsproxy.NewDNSClientServer(53, dst)
-
+					dnsproxy.NewDNSClientServer(53, dst, conn.CmdChan, nil)
 				}()
 			}
-			var conn = client.NewKcpClient(&cmdConfig, &kcpConfig)
-			conn.IfCompress = ifCompress
 			if isStatus {
 				conn.Role = "client"
 			}
