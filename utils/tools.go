@@ -123,6 +123,7 @@ func (tlsConfig *TlsConfig) WithConn() (conn *tls.Conn, err error) {
 }
 
 func (tlsConfig *TlsConfig) WithTlsListener() (listenr net.Listener, err error) {
+	// fmt.Println(tlsConfig)
 	config := tlsConfig.GenerateConfig()
 	ColorL(tlsConfig.Server)
 	listenr, err = tls.Listen("tcp", tlsConfig.Server, &config)

@@ -22,6 +22,7 @@ import (
 	"github.com/Qingluan/Kcpee/client"
 	"github.com/Qingluan/Kcpee/kcpserver"
 	"github.com/Qingluan/Kcpee/utils"
+	"github.com/Qingluan/dnsproxy"
 	"github.com/fatih/color"
 	// "./client"
 )
@@ -44,6 +45,8 @@ var (
 	plugin           string
 	conNum           int
 	ttl              int
+	dnsPort          int
+	isStartDNS       bool
 	isChangeConfig   bool
 	isRedirect       bool
 	isTunnel         bool
@@ -75,7 +78,8 @@ var (
 	ifStartUDPClient bool
 	toUri            bool
 	ifCompress       bool
-	irc              string
+
+	irc string
 	// Config area
 	refreshRate int
 )
@@ -141,6 +145,9 @@ func DoMain() {
 	flag.BoolVar(&toUri, "uri", false, "true to show uri")
 	flag.StringVar(&irc, "W", "", "cli config target pc/ph")
 	flag.BoolVar(&isTestAuthRoute, "alive", false, "test all route alive")
+	flag.BoolVar(&isStartDNS, "dns", false, "if start dns")
+	flag.IntVar(&dnsPort, "dnsport", 60053, "if start dns")
+
 	flag.IntVar(&refreshRate, "config.rate", 3, "set recv msg refresh rate, default: 3s")
 	flag.Parse()
 
@@ -447,6 +454,11 @@ func DoMain() {
 			kcpServe.Init(defaultBook)
 			// kcpServe.StartTunnels(utils.BOOK.GetServers()...)
 		}
+		if isStartDNS {
+			// time.Sleep(2 * time.Second)
+			g.Println("Start DNS Server : ", dnsPort)
+			go dnsproxy.NewDNSProxyServer(dnsPort)
+		}
 		if plugin != "" {
 			newconfig := utils.Config{}
 			data, _ := json.Marshal(&cmdConfig)
@@ -469,6 +481,7 @@ func DoMain() {
 			}()
 			go kcpServe.HiddenConnListener()
 		}
+
 		kcpServe.Listen()
 	} else if isTunnel {
 		var conn = client.NewKcpTunnel(&cmdConfig, &kcpConfig)
@@ -500,11 +513,23 @@ func DoMain() {
 			})
 			os.Exit(0)
 		}
+
 		if isCredient || configFile != "" || server != "" {
 			g.Println("run client mode")
 			if runtime.GOOS == "darwin" {
 				cmd := exec.Command("ulimit", "-n", "4096")
 				cmd.Run()
+			}
+			if isStartDNS {
+				time.Sleep(2 * time.Second)
+				// g.Println("Start DNS Server : ", dnsPort)
+
+				dst := fmt.Sprintf("%s:%d", server, dnsPort)
+				g.Println("Start DNS Client Server : ", dst)
+				go func() {
+					dnsproxy.NewDNSClientServer(53, dst)
+
+				}()
 			}
 			var conn = client.NewKcpClient(&cmdConfig, &kcpConfig)
 			conn.IfCompress = ifCompress
@@ -530,15 +555,16 @@ func DoMain() {
 				}()
 			}
 			go func() {
-						if client.IfProxyStart() {
-							client.ProxySet("")
-						} else {
-							client.ProxySet("http://localhost:10091")
-						}
+				if client.IfProxyStart() {
+					client.ProxySet("")
+				} else {
+					client.ProxySet("http://localhost:10091")
+				}
 			}()
 			conn.Listen(localAddress, ifStartUDPClient)
 		} else {
 		}
+
 	}
 
 }
