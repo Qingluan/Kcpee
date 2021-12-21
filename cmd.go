@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -46,6 +47,7 @@ var (
 	conNum           int
 	ttl              int
 	dnsPort          int
+	DNSListenPort    int
 	isStartDNS       bool
 	isChangeConfig   bool
 	isRedirect       bool
@@ -74,6 +76,7 @@ var (
 	thisnodeproxyto  string
 	doSomeString     string
 	SaveToFile       string
+	logFile          string
 	isGBK            bool
 	ifStartUDPClient bool
 	toUri            bool
@@ -83,6 +86,56 @@ var (
 	// Config area
 	refreshRate int
 )
+
+func Daemon(args []string, LOG_FILE string) {
+	// LOG_FILE = filepath.Join(os.TempDir(), "taste-2.log")
+	// LOG_FILE := ""
+	// if os.Getppid() != 1 {
+	createLogFile := func(fileName string) (fd *os.File, err error) {
+		dir := path.Dir(fileName)
+		if _, err = os.Stat(dir); err != nil && os.IsNotExist(err) {
+			if err = os.MkdirAll(dir, 0755); err != nil {
+				log.Println(err)
+				return
+			}
+		}
+		if fd, err = os.Create(fileName); err != nil {
+			log.Println(err)
+			return
+		}
+		return
+	}
+	if LOG_FILE != "" {
+		logFd, err := createLogFile(LOG_FILE)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		defer logFd.Close()
+
+		cmdName := args[0]
+		newProc, err := os.StartProcess(cmdName, args, &os.ProcAttr{
+			Files: []*os.File{logFd, logFd, logFd},
+		})
+		if err != nil {
+			log.Fatal("daemon error:", err)
+			return
+		}
+		log.Printf("Start-Deamon: run in daemon success, pid: %v\nlog : %s", newProc.Pid, LOG_FILE)
+	} else {
+		cmdName := args[0]
+		newProc, err := os.StartProcess(cmdName, args, &os.ProcAttr{
+			Files: []*os.File{nil, nil, nil},
+		})
+		if err != nil {
+			log.Fatal("daemon error:", err)
+			return
+		}
+		log.Printf("Start-Deamon: run in daemon success, pid: %v\n", newProc.Pid)
+	}
+	return
+	// }
+}
 
 func DoMain() {
 	var cmdConfig utils.Config
@@ -146,8 +199,9 @@ func DoMain() {
 	flag.StringVar(&irc, "W", "", "cli config target pc/ph")
 	flag.BoolVar(&isTestAuthRoute, "alive", false, "test all route alive")
 	flag.BoolVar(&isStartDNS, "dns", false, "if start dns")
-	flag.IntVar(&dnsPort, "dnsport", 60053, "if start dns")
-
+	flag.IntVar(&dnsPort, "dnsport", 60053, "set remote dns proxy server port")
+	flag.IntVar(&DNSListenPort, "dnslistenport", 60053, "set dns local listen port")
+	flag.StringVar(&logFile, "log", "/tmp/kcpee.log", "set log file path")
 	flag.IntVar(&refreshRate, "config.rate", 3, "set recv msg refresh rate, default: 3s")
 	flag.Parse()
 
@@ -407,22 +461,21 @@ func DoMain() {
 
 	if godaemon {
 		args := []string{}
-		for _, a := range os.Args[1:] {
+		for _, a := range os.Args {
 			if a == "-d" {
 				continue
 			}
 			args = append(args, a)
 		}
-		cmd := exec.Command(os.Args[0], args...)
-		cmd.Stdin = nil
-		cmd.Stdout = nil
-		cmd.Stderr = nil
-		// cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
-
-		cmd.Start()
-
+		Daemon(args, logFile)
+		// cmd := exec.Command(os.Args[0], args...)
+		// cmd.Stdin = nil
+		// cmd.Stdout = nil
+		// cmd.Stderr = nil
+		// cmd.Start()
 		time.Sleep(2 * time.Second)
-		fmt.Printf("%s [PID] %d running...\n", os.Args[0], cmd.Process.Pid)
+
+		// fmt.Printf("%s [PID] %d running...\n", os.Args[0], cmd.Process.Pid)
 		os.Exit(0)
 	}
 	if isSync && !isCredient {
@@ -532,9 +585,9 @@ func DoMain() {
 				if server == "" {
 					dst = fmt.Sprintf("%s:%d", conn.GetConfig().Server.(string), dnsPort)
 				}
-				g.Println("Start DNS Client Server : ", dst)
+				g.Println("Start DNS Client Server  : ", ":", DNSListenPort, "->", dst)
 				go func() {
-					dnsproxy.NewDNSClientServer(53, dst, conn.CmdChan, nil)
+					dnsproxy.NewDNSClientServer(DNSListenPort, dst, conn.CmdChan, nil)
 				}()
 			}
 			if isStatus {

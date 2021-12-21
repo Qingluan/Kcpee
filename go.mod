@@ -14,7 +14,6 @@ require (
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
 	github.com/klauspost/reedsolomon v1.9.9 // indirect
 	github.com/martinlindhe/notify v0.0.0-20181008203735-20632c9a275a
-	github.com/miekg/dns v1.1.43
 	github.com/mmcloughlin/avo v0.2.0 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/pkg/errors v0.9.1
