@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	gitee.com/dark.H/go-remote-repl v1.1.6
-	github.com/Qingluan/dnsproxy v0.0.0-20211220082108-c84795a891d6
+	github.com/Qingluan/dnsproxy v0.0.0-20211221122432-7221d421c541
 	github.com/deckarep/gosx-notifier v0.0.0-20180201035817-e127226297fb // indirect
 	github.com/fatih/color v1.9.0
 	github.com/gen2brain/dlgs v0.0.0-20200211102745-b9c2664df42f
@@ -14,6 +14,7 @@ require (
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
 	github.com/klauspost/reedsolomon v1.9.9 // indirect
 	github.com/martinlindhe/notify v0.0.0-20181008203735-20632c9a275a
+	github.com/miekg/dns v1.1.44 // indirect
 	github.com/mmcloughlin/avo v0.2.0 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/pkg/errors v0.9.1
@@ -28,6 +29,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
-	golang.org/x/text v0.3.6
+	golang.org/x/text v0.3.7
+	golang.org/x/tools v0.1.8 // indirect
 	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2 // indirect
 )
