@@ -56,7 +56,6 @@ func NewKcpClient(config *utils.Config, kconfig *utils.KcpConfig) (kclient *KcpC
 	kclient.SetConfig(config)
 	kclient.SetMode(AUTO_MODE)
 	kclient.SetKcpConfig(kconfig)
-	kclient.CmdChan = make(chan string, 3)
 	return
 }
 
@@ -411,12 +410,25 @@ func (conn *KcpClient) handleSS(ssuri string, con net.Conn) {
 		for _, b := range utils.BOOK.Books() {
 			output[b.Server.(string)] = b.LocalAddress
 		}
+		cfgnow := conn.GetConfig()
+		output[cfgnow.Server.(string)] = cfgnow.LocalAddress + " (now)"
 		// utils.ColorD(output)
-		if d, err := json.Marshal(output); err == nil {
+		utils.ColorL(cfgnow.Server.(string), "(now)")
+		if d, err := json.Marshal(&output); err == nil {
 			// utils.ColorL(d)
 			//fmt.Println(string(d))
 			if _, err := con.Write(d); err != nil {
 				utils.ColorL("json back Err:", err)
+			}
+		}
+	} else if ssuri == "ss://now" {
+		output := make(map[string]string)
+		c := conn.GetConfig()
+		output[c.Server.(string)] = c.LocalAddress
+
+		if d, err := json.Marshal(&output); err == nil {
+			if _, err := con.Write(d); err != nil {
+				utils.ColorL("ss://now| Err", err)
 			}
 		}
 	} else if ssuri == "ss://route" {
@@ -449,9 +461,11 @@ func (conn *KcpClient) handleSS(ssuri string, con net.Conn) {
 			if config := utils.BOOK.Get(usedRouteIP); config != nil {
 				utils.ColorL("Single Mode Use:", config.Server.(string), "pwd:", config.Password, " Port:", config.ServerPort)
 				utils.ColorL("Change DNS Server :", config.Server.(string))
-
-				conn.CmdChan <- config.Server.(string) + ":60053"
-				dnsproxy.CleanCache()
+				// conn.SetConfig()
+				if conn.CmdChan != nil {
+					conn.CmdChan <- config.Server.(string) + ":60053"
+					dnsproxy.CleanCache()
+				}
 				notify.Notify("Kcpee", "Set Route", fmt.Sprint(config.Server.(string), "pwd:", config.Password, " Port:", config.ServerPort), "")
 				conn.SetMode(SINGLE_MODE)
 				conn.SetConfig(config)

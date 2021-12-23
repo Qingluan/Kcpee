@@ -196,6 +196,14 @@ func (test *SpeedTest) LsConfig() (output map[string]string, err error) {
 	return
 }
 
+func (test *SpeedTest) GetNow() (out map[string]string, err error) {
+	var buf []byte
+	buf, err = test.baseCmd("ss://now")
+	d := make(map[string]string)
+	json.Unmarshal(buf, &d)
+	return d, err
+}
+
 func (test *SpeedTest) FlowMode() (output string, err error) {
 	var buf []byte
 	buf, err = test.baseCmd("ss://flow")
@@ -231,7 +239,7 @@ func (test *SpeedTest) LsRoute() (out string, err error) {
 		con.Write(d)
 		// con.Read(buf)
 		// ColorL(buf)
-		buf2 := make([]byte, 4096)
+		buf2 := make([]byte, 14096)
 		for {
 			if n, ierr := con.Read(buf2); ierr == nil {
 				// ColorL(buf2[:n])

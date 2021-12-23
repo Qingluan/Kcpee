@@ -69,6 +69,7 @@ var (
 	isToUri          bool
 	isCmdAutoRoute   bool
 	isCmdFlowRoute   bool
+	isCmdNow         bool
 	isTestAuthRoute  bool
 	isAuthEdit       bool
 	configToUrl      bool
@@ -183,6 +184,7 @@ func DoMain() {
 	flag.BoolVar(&isSync, "Sync", false, "will generate a config.en file by -c configs and route.map.file")
 	flag.BoolVar(&isCredient, "Auth", false, "will sync personal configs and route by decrypted git file.")
 	flag.BoolVar(&isCmdLs, "book.ls", false, "[use in local]:show local route info ")
+	flag.BoolVar(&isCmdNow, "book.now", false, "[use in local]:show now used route info ")
 	flag.BoolVar(&isCmdAutoRoute, "book.auto", false, "[use in local]:show local route info example: -book.auto ")
 	flag.StringVar(&isCmdSingleRoute, "book.single", "", "[use in local]:use config's single route ! example: -book.single 'ip' ")
 	flag.BoolVar(&isCmdFlowRoute, "book.flow", false, "[use in local]: example: -book.flow set book flow mode ")
@@ -280,6 +282,24 @@ func DoMain() {
 		tester := utils.NewSpeedTest()
 		o, _ := tester.FlowMode()
 		fmt.Println(o)
+		os.Exit(0)
+	} else if isCmdNow {
+		tester := utils.NewSpeedTest()
+		// if book := utils.NewBook(); book != nil {
+		// 	config := book.Get()
+		// 	// config.
+		// }
+		now, err := tester.GetNow()
+		if err != nil {
+			log.Fatal("[ss://now] err :", err)
+		}
+		for ip, loc := range now {
+			res := strings.Split(loc, "/")
+			if runtime.GOOS == "windows" {
+				res = strings.Split(loc, "\\")
+			}
+			fmt.Println(ip, ":", res[len(res)-1])
+		}
 		os.Exit(0)
 
 	} else if isCmdStop {
@@ -581,6 +601,7 @@ func DoMain() {
 				time.Sleep(2 * time.Second)
 				// g.Println("Start DNS Server : ", dnsPort)
 
+				conn.CmdChan = make(chan string, 300)
 				dst := fmt.Sprintf("%s:%d", server, dnsPort)
 				if server == "" {
 					dst = fmt.Sprintf("%s:%d", conn.GetConfig().Server.(string), dnsPort)

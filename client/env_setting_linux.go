@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/gen2brain/dlgs"
 )
@@ -92,49 +91,49 @@ func ProxySet(localAddr string) {
 	// 	dlgs.Info("Init ", DEKPATH_APP)
 	// 	InitDesktop()
 	// }
-	if _, err := os.Stat("/etc/profile"); err != nil {
-		return
-	}
-	RAWB, err := ioutil.ReadFile("/etc/profile")
-	if err != nil {
-		return
-	}
-	RAW := string(RAWB)
-	if localAddr != "" {
-		TMP := `
-##### PROXY PROFILE START 
-export http_proxy="` + localAddr + `"`
-		TMP += `
-export https_proxy="` + localAddr + `
-##### PROXY PROFILE END
-`
-		if !strings.Contains(RAW, TMP) {
-			RAW += TMP
-			//err := ioutil.WriteFile("/etc/profile", []byte(RAW), os.ModePerm)
+	// 	if _, err := os.Stat("/etc/profile"); err != nil {
+	// 		return
+	// 	}
+	// 	RAWB, err := ioutil.ReadFile("/etc/profile")
+	// 	if err != nil {
+	// 		return
+	// 	}
+	// 	RAW := string(RAWB)
+	// 	if localAddr != "" {
+	// 		TMP := `
+	// ##### PROXY PROFILE START
+	// export http_proxy="` + localAddr + `"`
+	// 		TMP += `
+	// export https_proxy="` + localAddr + `
+	// ##### PROXY PROFILE END
+	// `
+	// 		if !strings.Contains(RAW, TMP) {
+	// 			RAW += TMP
+	// 			//err := ioutil.WriteFile("/etc/profile", []byte(RAW), os.ModePerm)
 
-			_, err := exec.Command("bash", "-c", "sudo cat << EOF > /etc/profile\n"+RAW+"EOF\n").Output()
-			if err != nil {
-				dlgs.Error("Error Start Global Proxy", err.Error())
-			}
-			GlobalStatus = true
-			dlgs.Info("Infomation", "try to start proxy: "+localAddr)
-		}
-	} else {
-		if strings.Contains(RAW, "##### PROXY PROFILE START") {
-			s := strings.SplitN(RAW, "##### PROXY PROFILE START", 2)
-			PRE := s[0]
-			AFT := strings.TrimSpace(strings.SplitN(s[1], "##### PROXY PROFILE END", 2)[1])
-			RAW = PRE + "\n" + AFT
-			// err := ioutil.WriteFile("/etc/profile", []byte(RAW), os.ModePerm)
-			_, err := exec.Command("bash", "-c", "sudo cat << EOF > /etc/profile\n"+RAW+"EOF\n").Output()
-			if err != nil {
-				dlgs.Error("Error Start Global Proxy", err.Error())
-			}
-			//ioutil.WriteFile("/etc/profile", []byte(RAW), os.ModePerm)
-			GlobalStatus = false
-			dlgs.Info("Infomation", "try to stop proxy: ")
-		}
-	}
+	// 			_, err := exec.Command("bash", "-c", "sudo cat << EOF > /etc/profile\n"+RAW+"EOF\n").Output()
+	// 			if err != nil {
+	// 				dlgs.Error("Error Start Global Proxy", err.Error())
+	// 			}
+	// 			GlobalStatus = true
+	// 			dlgs.Info("Infomation", "try to start proxy: "+localAddr)
+	// 		}
+	// 	} else {
+	// 		if strings.Contains(RAW, "##### PROXY PROFILE START") {
+	// 			s := strings.SplitN(RAW, "##### PROXY PROFILE START", 2)
+	// 			PRE := s[0]
+	// 			AFT := strings.TrimSpace(strings.SplitN(s[1], "##### PROXY PROFILE END", 2)[1])
+	// 			RAW = PRE + "\n" + AFT
+	// 			// err := ioutil.WriteFile("/etc/profile", []byte(RAW), os.ModePerm)
+	// 			_, err := exec.Command("bash", "-c", "sudo cat << EOF > /etc/profile\n"+RAW+"EOF\n").Output()
+	// 			if err != nil {
+	// 				dlgs.Error("Error Start Global Proxy", err.Error())
+	// 			}
+	// 			//ioutil.WriteFile("/etc/profile", []byte(RAW), os.ModePerm)
+	// 			GlobalStatus = false
+	// 			dlgs.Info("Infomation", "try to stop proxy: ")
+	// 		}
+	// 	}
 
 }
 
