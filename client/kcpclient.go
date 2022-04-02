@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -164,6 +165,94 @@ func (kclient *KcpClient) SetMode(mode int) {
 	kclient.routeMode = mode
 }
 
+func (kcpClient *KcpClient) DirectTCPConnectTest(url string) {
+	port := 80
+	host := url
+	if strings.Contains(url, ":") {
+		port, _ = strconv.Atoi(strings.Split(host, ":")[1])
+		host = strings.Split(url, ":")[0]
+	}
+	buf := make([]byte, 4+1+len(host)+2)
+	copy(buf[:5], []byte{5, 1, 0, 3, byte(len(host))})
+	copy(buf[5:5+len(host)], []byte(host))
+	binary.BigEndian.PutUint16(buf[4+1+len(host):4+1+len(host)+2], uint16(port))
+
+	testData := strings.ReplaceAll(fmt.Sprintf(`GET / HTTP/2
+Host: %s
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:98.0) Gecko/20100101 Firefox/98.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Cookie: AEC=AVQQ_LCR1panrJAu55VhXR4q_XwMJZKMNFsWi6S5fCnvDh4RKviWNCHcOw; CONSENT=PENDING+374
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+
+`, host), "\n", "\r\n")
+	// c1 := testConn.NewTestConn([]byte(testData), 1)
+	config := kcpClient.GetConfig()
+	st := time.Now()
+	session := kcpClient.WithSession(config, 1)
+	// utils.ColorL("Raw:", raw)
+	if session == nil {
+		log.Println("no session , wait again!")
+		// continue
+	}
+
+	// var n int
+	// defer p1.Close()
+	p2, err := session.OpenStream()
+	if err != nil {
+		utils.ColorL("StreamErr", err)
+	}
+	// utils.ColorL("Stream", "ready")
+	defer p2.Close()
+	if _, err := p2.Write(buf); err != nil {
+		// log.Fatal("no host/addr")
+		fmt.Println("[x] 1.", config.Server, err)
+		return
+	}
+	socksReplyBuf := make([]byte, 128)
+
+	p2.SetReadDeadline(time.Now().Add(8 * time.Second))
+	_, err = p2.Read(socksReplyBuf)
+	if err != nil {
+
+		fmt.Println("[x] 2.", config.Server, err)
+		return
+	} else {
+		// color.New(color.FgYellow).Println("[Connected] ", config.Server, time.Now().Sub(st), socksReplyBuf[:n])
+	}
+	_, err = p2.Write([]byte(testData))
+	if err != nil {
+		fmt.Println("[x] 3.", config.Server, err)
+		return
+	} else {
+
+		color.New(color.FgYellow).Print("[Connected|Send ok] ", config.Server, " ", time.Now().Sub(st), "\r")
+	}
+	rbuf := make([]byte, 8096)
+
+	p2.SetReadDeadline(time.Now().Add(8 * time.Second))
+	_, err = p2.Read(rbuf)
+	if err != nil {
+		fmt.Println("[x] 4.", config.Server, err)
+		return
+	}
+
+	color.New(color.FgGreen).Println("[Recv Ok] ", config.Server, " ", time.Now().Sub(st))
+	// fmt.Println("[T] ", config.Server, time.Now().Sub(st))
+
+	// p1.Write(socksReplyBuf[:n])
+	// conn.Pipe(p1, p2)
+
+	// kcpClient.handleClient(session, c1, false, buf)
+	// fmt.Print
+	// kcpClient.handleBody(tesonn, host, buf)
+
+}
+
 func (kclient *KcpClient) handleSocks5TcpAndUDP(p1 net.Conn) {
 	defer p1.Close()
 	if err := utils.Socks5HandShake(&p1); err != nil {
@@ -175,6 +264,7 @@ func (kclient *KcpClient) handleSocks5TcpAndUDP(p1 net.Conn) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println(raw, host)
 	// if isUdp {
 
 	// 	utils.ColorL("socks5 UDP-->", host)

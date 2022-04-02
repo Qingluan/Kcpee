@@ -24,6 +24,7 @@ import (
 	"github.com/Qingluan/Kcpee/kcpserver"
 	"github.com/Qingluan/Kcpee/utils"
 	"github.com/Qingluan/dnsproxy"
+
 	"github.com/fatih/color"
 	// "./client"
 )
@@ -78,6 +79,7 @@ var (
 	doSomeString     string
 	SaveToFile       string
 	logFile          string
+	testRoutes       string
 	isGBK            bool
 	ifStartUDPClient bool
 	toUri            bool
@@ -141,6 +143,7 @@ func Daemon(args []string, LOG_FILE string) {
 func DoMain() {
 	var cmdConfig utils.Config
 	var kcpConfig utils.KcpConfig
+
 	gprint := utils.BGCOLORS[0]
 	flag.StringVar(&configFile, "c", "", "specify config uri/file/dir | uri: ss://{base64} "+gprint("if specify a dir , will auto scan multi configs"))
 	flag.StringVar(&server, "s", "", "server ip")
@@ -192,6 +195,8 @@ func DoMain() {
 	flag.BoolVar(&isCmdStop, "book.stop", false, "[use in local]: stop local progress by this  ")
 	flag.StringVar(&bookuri, "book.uri", "", "[use in local]: show ip's detail ssuri")
 	flag.StringVar(&bookcmd, "book.cmd", "", "[use in server]:run book cmd: redirect://ls | redirect://stop | redirect://ss://uri | redirect://scan@/path")
+	flag.StringVar(&testRoutes, "benchmark", "", "benchmark this url  by all routes")
+
 	flag.BoolVar(&isToUri, "Url", false, "true to print config file's uri stirng")
 	flag.StringVar(&kcpConfig.Mode, "kcpmode", "fast4", "set kcp mode normal,fast, fast1, fast2, fast3")
 	flag.StringVar(&thisnodeproxyto, "red", "", "node redirect to another node like -red ss://xxxx= ")
@@ -580,6 +585,7 @@ func DoMain() {
 				cli := client.NewKcpClient(&config, &kcpConfig)
 				cli.IfCompress = ifCompress
 				cli.ShowLog = 3
+
 				go cli.Listen(proxyAddr, false)
 				time.Sleep(3 * time.Second)
 				test := utils.NewSpeedTest()
@@ -587,8 +593,43 @@ func DoMain() {
 			})
 			os.Exit(0)
 		}
+		if testRoutes != "" {
+			fmt.Println("3 sec ... to test")
+			time.Sleep(3 * time.Second)
+			fmt.Println("test local addr:", localAddress)
+			waiter := sync.WaitGroup{}
+			for _, route := range utils.BOOK.Books() {
+				// fmt.Println("test config:", route.Server, route.ServerPort)
+				// exec.Command(os.Args[0], []string{"-book.single", route.Server.(string)}...).Output()
+				waiter.Add(1)
+				r2 := route.ToJson()
+				go func(w *sync.WaitGroup, c string) {
+					defer w.Done()
+					thisroute := new(utils.Config)
+					json.Unmarshal([]byte(c), thisroute)
+					tmpCli := client.NewKcpClient(thisroute, &kcpConfig)
+					tmpCli.DirectTCPConnectTest(testRoutes)
+				}(&waiter, r2)
 
+				// tmpCli.
+				// conn.SetConfig(&route)
+
+				// sess := http.NewSession()
+				// st := time.Now()
+				// sess.SetProxy("socks5://" + localAddress)
+				// if res, err := sess.Get(testRoutes); err != nil {
+				// 	fmt.Println("[x]", route.Server, err)
+				// } else {
+				// 	fmt.Println("[T]", res.StatusCode, route.Server, time.Now().Sub(st))
+
+				// }
+			}
+			waiter.Wait()
+			os.Exit(0)
+			// }()
+		}
 		if isCredient || configFile != "" || server != "" {
+
 			g.Println("run client mode")
 			if runtime.GOOS == "darwin" {
 				cmd := exec.Command("ulimit", "-n", "4096")
@@ -626,6 +667,7 @@ func DoMain() {
 			// conn.Init(nil)
 			conn.Numconn = conNum
 			conn.IfCompress = ifCompress
+
 			if isHttpProxy {
 				go func() {
 					// client.ProxySet("http://localhost:10091")
