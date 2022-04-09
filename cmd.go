@@ -338,6 +338,11 @@ func DoMain() {
 
 	if isCredient {
 		var err error
+		if strings.HasPrefix(authName, "/") {
+			authName = "dark.H/kcpconfig:" + authName
+		} else if authName == "" {
+			authName = "dark.H/kcpconfig"
+		}
 		if configFile, err = utils.Credient(authName, authPasswd); err != nil {
 			log.Fatal(err)
 		}
